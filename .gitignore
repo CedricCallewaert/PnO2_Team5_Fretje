@@ -18,6 +18,7 @@
 *.lvlps
 .cache/
 
+#-------------- Tex --------------
 
 
 ## Core latex/pdflatex auxiliary files:
