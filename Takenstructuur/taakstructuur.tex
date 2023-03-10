@@ -1,0 +1,95 @@
+\documentclass[12pt]{article}
+
+% style
+\setlength{\parindent}{0pt}
+\usepackage[left=2.5cm,top=2cm,right=2.5cm,bottom=2cm,a4paper]{geometry}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\lhead{Team X: TeamFancy}
+\rhead{Taakstructuur: VOORBEELD}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% table
+\usepackage{etoolbox}
+\usepackage{booktabs}
+\usepackage{xstring}
+\usepackage{xcolor,colortbl}
+\definecolor{gray1}{gray}{0.7}
+\definecolor{gray2}{gray}{0.85}
+\definecolor{gray3}{gray}{0.95}
+
+% counting system		
+\newcounter{counter}
+\newcounter{subcounter}
+\newcounter{subsubcounter}
+\newcommand{\teller}{
+	\stepcounter{counter}
+	\setcounter{subcounter}{0}
+	\setcounter{subsubcounter}{0}
+	\thecounter}
+\newcommand{\subteller}{
+	\stepcounter{subcounter}
+	\setcounter{subsubcounter}{0}
+	\thecounter.\thesubcounter}
+\newcommand{\subsubteller}{
+	\stepcounter{subsubcounter}
+	\thecounter.\thesubcounter.\thesubsubcounter}
+
+% row	
+\newcommand{\row}[3]{
+	\IfEqCase{#1}{
+		{1}{\teller & #2 & \IfEqCase{#3}{{0}{niet OK}{1}{OK}} \\}
+		{2}{\subteller & #2 & \IfEqCase{#3}{{0}{niet OK}{1}{OK}} \\}
+		{3}{\subsubteller & #2 & \IfEqCase{#3}{{0}{niet OK}{1}{OK}} \\}
+	}[PackageError{row}{Undefined option to row: #1}]}
+
+
+
+\begin{document}	
+	
+	\begin{table}
+		\centering
+		\caption{Voorbeeldtakenstructuur. De caption van een tabel staat steeds boven de tabel!}
+		\begin{tabular}{p{1cm}p{12cm}c}
+			\toprule
+			Code & Taak & Status \\ 
+			\midrule
+			\row{1}{Inwerken}{1}
+			\row{2}{Documenten op Toledo lezen}{1}
+			\row{2}{Handleiding P\&O2}{1}
+			\row{2}{Ontwerpen en plannen}{1}
+			\midrule
+			\row{1}{CAD model}{0}
+			\row{2}{3D modellen	(Solid parts)}{1}
+			\row{3}{Wiel}{1}
+			\row{3}{Schroef}{1}
+			\row{3}{Kleursensor}{1}
+			\row{3}{...}{1}
+			\row{2}{Assemblage (Assembly)}{0}
+			\row{2}{Technische tekeningen (Drawing)}{0}
+			\row{2}{Stuklijst}{0}
+			\midrule
+			\row{1}{Rapportering}{0}
+			\row{2}{Tussentijds verslag}{0}
+			\row{3}{Sectie 1}{1}
+			\row{3}{Sectie 2}{0}
+			\row{3}{...}{0}
+			\row{3}{Nalezen}{0}
+			\row{2}{Tussentijdse presentatie}{0}
+			\row{3}{Structuur}{0}
+			\row{3}{Presentatie maken}{0}
+			\row{3}{Nalezen}{0}
+			\row{3}{Inoefenen}{0}
+			\bottomrule
+		\end{tabular}
+	\end{table}
+
+Opmerkingen:
+	\begin{itemize}
+		\item Een eigenschap van een goed gedefinieerde taak is dat je vrij exact kan schatten hoe lang het duurt om voorgenoemde taak uit te voeren. Als dat niet het geval is, moet je de taak waarschijnlijk nog verder opdelen.
+		\item Pas je taakstructuur aan als er taken bijkomen of als ze niet nodig blijken.
+		\item Bepaalde taken vereisen mogelijk meer uitleg. 
+		\item Vul ook steeds de status in. 
+	\end{itemize}
+
+\end{document}
