@@ -1,6 +1,19 @@
 import cv2 
 import numpy as np
 
+def distance_to_camera(knownWidth, focalLength , perWidth):
+	# compute and return the distance from the maker to the camera
+    if perWidth > 0 :
+	    return (knownWidth * focalLength) / perWidth
+    else:
+        return "fout"
+
+
+
+
+
+
+
 
 
 cap = cv2.VideoCapture(1)
@@ -34,7 +47,6 @@ while True:
         # transform into circle
         circle1 = cv2.minEnclosingCircle(c)
         ((x1, y1), radius1) = circle1
-        s1 = "x1: {}, y1: {}, radius1: {}".format(np.round(x1), np.round(y1), np.round(radius1))
 
         #circle
         center1 = (int(x1),int(y1))
@@ -51,6 +63,12 @@ while True:
 
         # draw a dot to the center : pink
         cv2.circle(frame, center1, 5, (255, 0, 255), -1)
+
+        # calculate distance
+        distance1 = distance_to_camera(250, 25, radius1)
+
+        #create text
+        s1 = "x1: {}, y1: {}, radius1: {}, distance1: {}".format(np.round(x1), np.round(y1), np.round(radius1), distance1)
 
         # write to the screen
         cv2.putText(frame, s1, (25, 50), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255, 255, 255), 2)
@@ -69,7 +87,7 @@ while True:
         # transform into circle
         circle2 = cv2.minEnclosingCircle(d)
         ((x2, y2), radius2) = circle2
-        s2 = "x2: {}, y2: {}, radius2: {}".format(np.round(x2), np.round(y2), np.round(radius2)) 
+        
 
         #circle
         center2 = (int(x2),int(y2))
@@ -87,6 +105,12 @@ while True:
         # draw a dot to the center : pink
         cv2.circle(frame, center2, 5, (255, 0, 255), -1)
 
+        # calculate distance
+        distance2 = distance_to_camera(250, 25, radius2)
+
+        #create text
+        s2 = "x2: {}, y2: {}, radius2: {}, distance2: {}".format(np.round(x2), np.round(y2), np.round(radius2), distance2) 
+
         # write to the screen
         cv2.putText(frame, s2, (25, 75), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255, 255, 255), 2)
 
@@ -102,7 +126,7 @@ while True:
         # transform into circle
         circle3 = cv2.minEnclosingCircle(e)
         ((x3, y3), radius3) = circle3
-        s3 = "x3: {}, y3: {}, radius3: {}".format(np.round(x3), np.round(y3), np.round(radius3)) 
+         
 
         #circle
         center3 = (int(x3),int(y3))
@@ -119,6 +143,12 @@ while True:
 
         # draw a dot to the center : pink
         cv2.circle(frame, center3, 5, (255, 0, 255), -1)
+
+        # calculate distance
+        distance3 = distance_to_camera(250, 25, radius3)
+
+        #create text
+        s3 = "x3: {}, y3: {}, radius3: {}, distance3: {}".format(np.round(x3), np.round(y3), np.round(radius3), distance3)
 
         # write to the screen
         cv2.putText(frame, s3, (25, 100), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255, 255, 255), 2)
