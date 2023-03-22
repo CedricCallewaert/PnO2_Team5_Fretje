@@ -1,4 +1,4 @@
-import cv2 
+import cv2
 import numpy as np
 
 
@@ -7,6 +7,7 @@ def distance_to_camera(knownWidth, focalLength , perWidth):
     if perWidth > 0 :
         return (knownWidth * focalLength) / perWidth
     else:
+<<<<<<< Updated upstream:Color_Detection.py
         return np.nan
 
 def focal_length(measured_distance, real_width, width_in_real):
@@ -34,6 +35,17 @@ def draw_circle(contours, number, frame):
 
     # draw a dot to the center : pink
     cv2.circle(frame, center1, 5, (255, 0, 255), -1)
+=======
+        return "fout"
+
+
+cap = cv2.VideoCapture(0)
+while True:
+
+    _, frame = cap.read()
+    
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+>>>>>>> Stashed changes:Code/Main.py
 
     # calculate distance
     
