@@ -7,7 +7,7 @@ def distance_to_camera(knownWidth, focalLength , perWidth):
     if perWidth > 0 :
         return (knownWidth * focalLength) / perWidth
     else:
-        return "fout"
+        return np.nan
 
 def focal_length(measured_distance, real_width, width_in_real):
     focal_length = (width_in_real * measured_distance) / real_width
@@ -52,6 +52,10 @@ def draw_circle(contours, number, frame):
 
 def main():
 
+    gemiddelde1 = 0
+    gemiddelde2 = 0
+    gemiddelde3 = 0
+
     cap = cv2.VideoCapture(1)
 
     som1=np.array([0,0,0], dtype=np.float64)
@@ -81,15 +85,19 @@ def main():
 
         sorted_contours= sorted(contours, key=cv2.contourArea, reverse= True)
         
+        
         if len(contours) > 0:
             teller1+=1
             som1 += draw_circle(sorted_contours, 0, frame)
+          
         if len(contours) > 1:
             teller2+=1
             som2 += draw_circle(sorted_contours, 1, frame)
+           
         if len(contours) > 2:
             teller3+=1
             som3 += draw_circle(sorted_contours, 2, frame)
+           
 
         
 
@@ -107,9 +115,12 @@ def main():
 
     cv2.destroyAllWindows()
 
-    gemiddelde1 = som1/teller1
-    gemiddelde2 = som2/teller2
-    gemiddelde3 = som3/teller3
+    if teller1 != 0 or teller2 != 0 or teller3 != 0:
+        gemiddelde1 = som1/teller1
+        gemiddelde2 = som2/teller2
+        gemiddelde3 = som3/teller3
+
+    
 
     return gemiddelde1, gemiddelde2, gemiddelde3
 
