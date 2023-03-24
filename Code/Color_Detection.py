@@ -124,3 +124,4 @@ def main(aantal):
 
     return gemiddelde1, gemiddelde2, gemiddelde3
 
+main(10000)
