@@ -116,12 +116,12 @@ def main(aantal):
     cv2.destroyAllWindows()
 
     if teller1 != 0 or teller2 != 0 or teller3 != 0:
-        gemiddelde1 = som1/teller1
-        gemiddelde2 = som2/teller2
-        gemiddelde3 = som3/teller3
+        gemiddelde1 = (som1/teller1).tolist()
+        gemiddelde2 = (som2/teller2).tolist()
+        gemiddelde3 = (som3/teller3).tolist()
 
-    
+    output= gemiddelde1 + gemiddelde2 + gemiddelde3
 
-    return gemiddelde1, gemiddelde2, gemiddelde3
+    return output
 
-main(10000)
+print(main(10))
