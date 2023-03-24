@@ -124,4 +124,4 @@ def main(aantal):
 
     return output
 
-print(main(10))
+print(main(10000))
