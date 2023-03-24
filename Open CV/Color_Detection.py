@@ -1,4 +1,4 @@
-import cv2 
+import cv2
 import numpy as np
 
 def distance_to_camera(knownWidth, focalLength , perWidth):
@@ -9,14 +9,7 @@ def distance_to_camera(knownWidth, focalLength , perWidth):
         return "fout"
 
 
-
-
-
-
-
-
-
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 while True:
 
     _, frame = cap.read()
