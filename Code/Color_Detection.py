@@ -56,7 +56,7 @@ def main(aantal):
     gemiddelde2 = 0
     gemiddelde3 = 0
 
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
 
     som1=np.array([0,0,0], dtype=np.float64)
     teller1=0
