@@ -57,7 +57,7 @@ def main(aantal):
     gemiddelde2 = 0
     gemiddelde3 = 0
 
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
 
     som1=np.array([0,0,0], dtype=np.float64)
     teller1=0
@@ -69,7 +69,7 @@ def main(aantal):
     teller3=0
 
 
-    for i in range(aantal):
+    while True:
 
         _, frame = cap.read()
         
@@ -125,4 +125,4 @@ def main(aantal):
 
     return output
 
-main(10000000)
+main(5)
