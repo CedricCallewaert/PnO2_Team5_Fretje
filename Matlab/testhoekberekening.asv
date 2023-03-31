@@ -6,7 +6,7 @@ function [theta_graden] = testhoekberekening(dist)
     C = 0.30;
     K = (r^2)*pi*rho*C;
     g = 9.81;
-    v0 = 21.22;
+    v0 = 14;
     x0 = 0;
     y0 = 2.5;
     tspan = [0:0.005:0.8];
@@ -17,8 +17,9 @@ function [theta_graden] = testhoekberekening(dist)
                        -g-K*N(4)*norm([N(3),N(4)])];
 %over alle hoeken de afstanden berekenen en dichtstbij de gewilde afstand
     for i = 1:length(theta)
-        B = [x0,y0,v0*cosd(-theta(0)+0.1+i/10),v0*sind(theta(0)+0.1+i/10)];
-        [~, N] = ode45(f, tspan, B);
+        B = [x0,y0,v0*cosd(-38.1+i/10),v0*sind(-38.1+i/10)];
+        options = odeset('Events',eventfunction,'RelTol',1e-6);
+        [~, N] = ode45(f, tspan, B, options);
 
         D(i) = min((N(:,1)-dist).^2+((N(:,2)).^2));
     end
@@ -27,7 +28,7 @@ function [theta_graden] = testhoekberekening(dist)
     theta_graden = theta(idx);
     
     B_best = [x0,y0,v0*cosd(theta_graden),v0*sind(theta_graden)];
-    [t,M] = ode45(f, tspan, B_best);
+    [t,M] = ode45(f, tspan, B_best, options);
     hold on
     plot(M(:,1),M(:,2))
     t = xlabel('afstand (m)');
