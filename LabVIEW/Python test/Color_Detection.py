@@ -16,12 +16,7 @@ def camera_calibration():
     img_points = []  # 2D plunten
 
     # Load images
-    cap = cv2.VideoCapture(0)
-    images = []
-    for i in range(10):
-        _, frame = cap.read()
-        images.append(frame)
-    cap.release()
+    images = [cv2.imread(f'calibration_images/{i}.jpg') for i in range(1, 11)]
 
     # Define the object points for the calibration pattern (in the calibration pattern coordinate system)
     objp = np.zeros((pattern_size[0]*pattern_size[1], 3), np.float32)
