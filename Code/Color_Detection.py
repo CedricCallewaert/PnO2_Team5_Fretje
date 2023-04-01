@@ -80,55 +80,57 @@ def camera_calibration():
     
     cv2.destroyAllWindows()
 
-    #print(objpoints, imgpoints, gray.shape[::-1])
+    
     # Calibrate the camera using the object points and image points
-    #ret, K, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
+    ret, K, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
 
     
-    # Print the camera matrix
-    #return K, dist, rvecs, tvecs
+   
+    return K, dist
     
-def calculate_3D_Coordinates(frame, K, dist, rvecs, tvecs, x, y):
-    # Load the image
-    frame = cv2.imread('path/to/image.png')
+def calculate_projection_matrix(K, dist_coeffs, three_D_points, two_D_points):
+    
+    # Calculate the projection matrix using solvePnP
+    
+    success, rvec, tvec = cv2.solvePnP(three_D_points, two_D_points, K, dist_coeffs)
+    
+    rot_mat, _ = cv2.Rodrigues(rvec)
+    
+    projection_matrix = np.hstack((rot_mat, tvec))
+    
+    return projection_matrix
 
-    # Define the 2D image coordinates of the four points
-    image_points = np.array([
-        [x1, y1],
-        [x2, y2],
-        [x3, y3],
-        [x4, y4]
-    ], dtype=np.float32)
 
-    # Define the corresponding 3D world coordinates of the four points
-    world_points = np.array([
-        [w1, h1, d1],
-        [w2, h2, d2],
-        [w3, h3, d3],
-        [w4, h4, d4]
-    ], dtype=np.float32)
+def find_3d_point(projection_matrix, image_point):
 
-    # Use solvePNP to get the rotation and translation vectors
-    _, rvec, tvec = cv2.solvePnP(world_points, image_points, K, None)
+    # Calculate the 3D coordinates of the point
 
-    # Convert the rotation vector to a rotation matrix using Rodrigues
-    R, _ = cv2.Rodrigues(rvec)
+    point_3d_hom = np.dot(np.linalg.inv(projection_matrix), np.vstack((image_point[0], np.ones(1))))
+    
+    point_3d = point_3d_hom[:3] / point_3d_hom[3]
+    
+    return point_3d
 
-    # Concatenate the rotation and translation vectors to get the extrinsic matrix
-    ext_matrix = np.concatenate((R, tvec), axis=1)
+def get_coordinates(num_points):
+    
+    
+    coords_3d = np.empty((num_points, 3))
+    coords_2d = np.empty((num_points, 2))
 
-    # Multiply the extrinsic matrix with the camera matrix to get the projection matrix
-    proj_matrix = np.matmul(K, ext_matrix)
+    
+    for i in range(num_points):
+        
+        x = float(input(f"Enter X coordinate of point {i+1}: "))
+        y = float(input(f"Enter Y coordinate of point {i+1}: "))
+        z = float(input(f"Enter Z coordinate of point {i+1}: "))
+        coords_3d[i] = np.array([x, y, z])
 
-    # Now, you can use the projection matrix to convert image coordinates to world coordinates
-    homogeneous_image_points = np.concatenate((image_points, np.ones((4, 1))), axis=1)
-    homogeneous_world_points = np.matmul(homogeneous_image_points, np.linalg.inv(proj_matrix).T)
+        
+        u = float(input(f"Enter u coordinate of point {i+1}: "))
+        v = float(input(f"Enter v coordinate of point {i+1}: "))
+        coords_2d[i] = np.array([u, v])
 
-    # Normalize the homogeneous world points
-    world_points = homogeneous_world_points[:, :3] / homogeneous_world_points[:, 3:]
-
-    # Print the world coordinates of the four points
-    return(world_points)
+    return coords_3d, coords_2d
 
 def distance_to_camera(knownWidth, focalLength , perWidth):
     # compute and return the distance from the maker to the camera
@@ -172,13 +174,22 @@ def draw_circle(contours, number, frame):
     # write to the screen
     cv2.putText(frame, s1, (25, 50 + number * 25), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255, 255, 255), 2)
 
-    return np.array([x1, y1, distance1])
+    return np.array([x1, y1])
 
     
 
 
 
 def main(aantal):
+    # Get the camera calibration matrix and distortion coefficients
+    K, dist = camera_calibration()
+
+    # get the coordinates of the 3D points and the 2D points
+    coords_3d, coords_2d = get_coordinates()
+
+    # Calculate the projection matrix
+    projection_matrix = calculate_projection_matrix(K, dist, coords_3d, coords_2d)
+
 
     gemiddelde1 = 0
     gemiddelde2 = 0
@@ -243,14 +254,25 @@ def main(aantal):
 
     cv2.destroyAllWindows()
 
-    if teller1 != 0 or teller2 != 0 or teller3 != 0:
-        gemiddelde1 = (som1/teller1).tolist()
-        gemiddelde2 = (som2/teller2).tolist()
-        gemiddelde3 = (som3/teller3).tolist()
+    
 
-    output= gemiddelde1 + gemiddelde2 + gemiddelde3
+
+    if teller1 != 0 or teller2 != 0 or teller3 != 0:
+        gemiddelde1 = (som1/teller1)
+        gemiddelde2 = (som2/teller2)
+        gemiddelde3 = (som3/teller3)
+    
+    for i in range(3):
+        # calculate the 3D coordinates of the point
+        point_3d_1 = (find_3d_point(projection_matrix, gemiddelde1)).tolist()
+        point_3d_2 = (find_3d_point(projection_matrix, gemiddelde2)).tolist()
+        point_3d_3 = (find_3d_point(projection_matrix, gemiddelde3)).tolist()
+
+
+        
+
+    output= point_3d_1 + point_3d_2 + point_3d_3
 
     return output
 
 
-camera_calibration()
