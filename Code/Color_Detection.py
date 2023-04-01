@@ -6,49 +6,129 @@ def distance_to_camera_alternative(height, y_waarde, x_waarde):
     y_graden= y_waarde * (18/720) + 50,2
     x_graden= x_waarde * (75/1280)
 
+def getImages():
+    cap = cv2.VideoCapture(0)
+
+    num = 0
+
+    while cap.isOpened():
+
+        _, img = cap.read()
+
+        k = cv2.waitKey(5)
+
+        if k == 27:
+            break
+        elif k == ord('s'): # s = save image to file  
+            cv2.imwrite('images/img' + str(num) + '.png', img)
+            print("image saved!")
+            num += 1
+
+        cv2.imshow('Img',img)
+
+    # Release and destroy all windows before termination
+    cap.release()
+
+    cv2.destroyAllWindows()
+
 def camera_calibration():
-    
+    # chessboard parameters
+    chessboardSize = (9, 5)
+    squareSize = 20
+    frameSize = (1920, 1080)
+
+
+
     # termination criteria
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
     # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
-    objp = np.zeros((6*7,3), np.float32)
-    objp[:,:2] = np.mgrid[0:7,0:6].T.reshape(-1,2)
+    objp = np.zeros((chessboardSize[0] * chessboardSize[1],3), np.float32)
+    objp[:,:2] = np.mgrid[0:chessboardSize[0],0:chessboardSize[1]].T.reshape(-1,2)
+
+    objp = objp * squareSize
 
     # Arrays to store object points and image points from all the images.
     objpoints = [] # 3d point in real world space
     imgpoints = [] # 2d points in image plane.
 
-    images = glob.glob('*.jpg')
+    images = glob.glob('images/*.png')
+    
+    num = 0
 
-    for fname in images:
-        img = cv2.imread(fname)
+    for frame in images:
+        img = cv2.imread(frame)
         gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 
         # Find the chess board corners
-        ret, corners = cv2.findChessboardCorners(gray, (6,6),None)
+        ret, corners = cv2.findChessboardCorners(gray, chessboardSize ,None)
 
         # If found, add object points, image points (after refining them)
         if ret == True:
             objpoints.append(objp)
 
             corners2 = cv2.cornerSubPix(gray,corners,(11,11),(-1,-1),criteria)
-            imgpoints.append(corners2)
+            imgpoints.append(corners)
 
             # Draw and display the corners
-            img = cv2.drawChessboardCorners(img, (7,6), corners2,ret)
+            img = cv2.drawChessboardCorners(img, chessboardSize , corners2,ret)
+            cv2.imwrite('images/img_calculated' + str(num) + '.png', img)
             cv2.imshow('img',img)
-            cv2.waitKey(500)
-
+            cv2.waitKey(100)
+            num += 1
+    
+    
     cv2.destroyAllWindows()
 
+    #print(objpoints, imgpoints, gray.shape[::-1])
     # Calibrate the camera using the object points and image points
-    ret, K, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
+    #ret, K, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
 
-    # Print the camera matrix
-    return K, dist, rvecs, tvecs
     
+    # Print the camera matrix
+    #return K, dist, rvecs, tvecs
+    
+def calculate_3D_Coordinates(frame, K, dist, rvecs, tvecs, x, y):
+    # Load the image
+    frame = cv2.imread('path/to/image.png')
 
+    # Define the 2D image coordinates of the four points
+    image_points = np.array([
+        [x1, y1],
+        [x2, y2],
+        [x3, y3],
+        [x4, y4]
+    ], dtype=np.float32)
+
+    # Define the corresponding 3D world coordinates of the four points
+    world_points = np.array([
+        [w1, h1, d1],
+        [w2, h2, d2],
+        [w3, h3, d3],
+        [w4, h4, d4]
+    ], dtype=np.float32)
+
+    # Use solvePNP to get the rotation and translation vectors
+    _, rvec, tvec = cv2.solvePnP(world_points, image_points, K, None)
+
+    # Convert the rotation vector to a rotation matrix using Rodrigues
+    R, _ = cv2.Rodrigues(rvec)
+
+    # Concatenate the rotation and translation vectors to get the extrinsic matrix
+    ext_matrix = np.concatenate((R, tvec), axis=1)
+
+    # Multiply the extrinsic matrix with the camera matrix to get the projection matrix
+    proj_matrix = np.matmul(K, ext_matrix)
+
+    # Now, you can use the projection matrix to convert image coordinates to world coordinates
+    homogeneous_image_points = np.concatenate((image_points, np.ones((4, 1))), axis=1)
+    homogeneous_world_points = np.matmul(homogeneous_image_points, np.linalg.inv(proj_matrix).T)
+
+    # Normalize the homogeneous world points
+    world_points = homogeneous_world_points[:, :3] / homogeneous_world_points[:, 3:]
+
+    # Print the world coordinates of the four points
+    return(world_points)
 
 def distance_to_camera(knownWidth, focalLength , perWidth):
     # compute and return the distance from the maker to the camera
@@ -173,4 +253,4 @@ def main(aantal):
     return output
 
 
-print(camera_calibration())
+camera_calibration()
