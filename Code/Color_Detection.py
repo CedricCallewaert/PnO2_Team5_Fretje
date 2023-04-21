@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import glob
 
+
 def distance_to_camera_alternative(height, y_waarde, x_waarde):
     y_graden= y_waarde * (18/720) + 50,2
     x_graden= x_waarde * (75/1280)
@@ -196,6 +197,7 @@ def main(aantal):
     gemiddelde3 = 0
 
     cap = cv2.VideoCapture(0)
+    cap.set(cv2.CAP_PROP_EXPOSURE,-4)
 
     som1=np.array([0,0,0], dtype=np.float64)
     teller1=0
@@ -276,3 +278,4 @@ def main(aantal):
     return output
 
 
+getImages()
