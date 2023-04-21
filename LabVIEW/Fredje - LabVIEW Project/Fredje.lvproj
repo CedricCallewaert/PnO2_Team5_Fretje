@@ -25,9 +25,7 @@
 		<Property Name="server.vi.callsEnabled" Type="Bool">true</Property>
 		<Property Name="server.vi.propertiesEnabled" Type="Bool">true</Property>
 		<Property Name="specify.custom.address" Type="Bool">false</Property>
-		<Item Name="Cameradetectie" Type="Folder" URL="../Cameradetectie">
-			<Property Name="NI.DISK" Type="Bool">true</Property>
-		</Item>
+		<Item Name="Cameradetectie" Type="Folder"/>
 		<Item Name="Matlab" Type="Folder" URL="../Matlab">
 			<Property Name="NI.DISK" Type="Bool">true</Property>
 		</Item>
@@ -39,7 +37,11 @@
 		</Item>
 		<Item Name="Main_pc.vi" Type="VI" URL="../Main_pc.vi"/>
 		<Item Name="Shared variables.lvlib" Type="Library" URL="../Shared variables.lvlib"/>
-		<Item Name="Dependencies" Type="Dependencies"/>
+		<Item Name="Dependencies" Type="Dependencies">
+			<Item Name="python_integratie.vi" Type="VI" URL="../Cameradetectie/python_integratie.vi"/>
+			<Item Name="PythonVersionsEnum.ctl" Type="VI" URL="../../../../../../../../../Program Files (x86)/National Instruments/LabVIEW 2021/examples/Connectivity/Python/support/PythonVersionsEnum.ctl"/>
+			<Item Name="ToPythonVersionString.vi" Type="VI" URL="../../../../../../../../../Program Files (x86)/National Instruments/LabVIEW 2021/examples/Connectivity/Python/support/ToPythonVersionString.vi"/>
+		</Item>
 		<Item Name="Build Specifications" Type="Build"/>
 	</Item>
 	<Item Name="KULAK-WPSP-RIO1" Type="RT myRIO">
