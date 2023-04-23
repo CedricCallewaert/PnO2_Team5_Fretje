@@ -124,7 +124,7 @@ def camera_calibration():
    
     return K, dist
     
-def calculate_projection_matrix(K, dist_coeffs, three_D_points, two_D_points):
+# def calculate_projection_matrix(K, dist_coeffs, three_D_points, two_D_points):
     
     # Calculate the projection matrix using solvePnP
     
@@ -147,7 +147,7 @@ def find_3d_point(projection_matrix, image_point):
     
     return point_3d
 
-def get_coordinates(num_points):
+# def get_coordinates(num_points):
     
     
     coords_3d = np.empty((num_points, 3))
@@ -167,17 +167,6 @@ def get_coordinates(num_points):
         coords_2d[i] = np.array([u, v])
 
     return coords_3d, coords_2d
-
-def distance_to_camera(knownWidth, focalLength , perWidth):
-    # compute and return the distance from the maker to the camera
-    if perWidth > 0 :
-        return (knownWidth * focalLength) / perWidth
-    else:
-        return np.nan
-
-def focal_length(measured_distance, real_width, width_in_real):
-    focal_length = (width_in_real * measured_distance) / real_width
-    return focal_length
 
 def draw_circle(contours, number, frame):
     

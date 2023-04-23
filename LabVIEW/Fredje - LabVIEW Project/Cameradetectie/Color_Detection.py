@@ -2,9 +2,6 @@ import cv2
 import numpy as np
 import glob
 
-def distance_to_camera_alternative(height, y_waarde, x_waarde):
-    y_graden= y_waarde * (18/720) + 50,2
-    x_graden= x_waarde * (75/1280)
 
 def getImages():
     cap = cv2.VideoCapture(0)
@@ -31,10 +28,52 @@ def getImages():
 
     cv2.destroyAllWindows()
 
+def camera_pose_estimation():
+    # Load previously saved data
+    with np.load("calibration.npz") as X:
+            K, dist = [X[i] for i in ("K", "dist")]
+
+    cap = cv2.VideoCapture(0)
+    _, img = cap.read()
+
+    # Release and destroy all windows before termination
+    cap.release()
+
+    # chessboard parameters
+    chessboardSize = (8, 6)
+    squareSize = 21
+    frameSize = (1920, 1080)
+
+    # termination criteria
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+
+    # prepare object points
+    objp = np.zeros((chessboardSize[0] * chessboardSize[1],3), np.float32)
+    objp[:,:2] = np.mgrid[0:chessboardSize[0],0:chessboardSize[1]].T.reshape(-1,2)
+
+    objp = objp * squareSize
+
+    # Arrays to store object points and image points from all the images.
+    objpoints = [] # 3d point in real world space
+    imgpoints = [] # 2d points in image plane.
+    
+    # Find the chess board corners
+    gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+    ret, corners = cv2.findChessboardCorners(gray, chessboardSize ,None)
+
+    success, rvec, tvec = cv2.solvePnP(objp, corners, K, dist)
+    
+    rot_mat, _ = cv2.Rodrigues(rvec)
+    
+    projection_matrix = np.hstack((rot_mat, tvec))
+    
+    np.savez("projection_matrix.npz", projection_matrix=projection_matrix)
+    
+
 def camera_calibration():
     # chessboard parameters
-    chessboardSize = (9, 5)
-    squareSize = 20
+    chessboardSize = (8, 6)
+    squareSize = 21
     frameSize = (1920, 1080)
 
 
@@ -42,7 +81,7 @@ def camera_calibration():
     # termination criteria
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
-    # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
+    # prepare object points
     objp = np.zeros((chessboardSize[0] * chessboardSize[1],3), np.float32)
     objp[:,:2] = np.mgrid[0:chessboardSize[0],0:chessboardSize[1]].T.reshape(-1,2)
 
@@ -85,20 +124,8 @@ def camera_calibration():
     ret, K, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
 
     
-   
-    return K, dist
+    np.savez("calibration.npz", K=K, dist=dist)
     
-def calculate_projection_matrix(K, dist_coeffs, three_D_points, two_D_points):
-    
-    # Calculate the projection matrix using solvePnP
-    
-    success, rvec, tvec = cv2.solvePnP(three_D_points, two_D_points, K, dist_coeffs)
-    
-    rot_mat, _ = cv2.Rodrigues(rvec)
-    
-    projection_matrix = np.hstack((rot_mat, tvec))
-    
-    return projection_matrix
 
 
 def find_3d_point(projection_matrix, image_point):
@@ -111,7 +138,7 @@ def find_3d_point(projection_matrix, image_point):
     
     return point_3d
 
-def get_coordinates(num_points):
+# def get_coordinates(num_points):
     
     
     coords_3d = np.empty((num_points, 3))
@@ -132,18 +159,8 @@ def get_coordinates(num_points):
 
     return coords_3d, coords_2d
 
-def distance_to_camera(knownWidth, focalLength , perWidth):
-    # compute and return the distance from the maker to the camera
-    if perWidth > 0 :
-        return (knownWidth * focalLength) / perWidth
-    else:
-        return np.nan
-
-def focal_length(measured_distance, real_width, width_in_real):
-    focal_length = (width_in_real * measured_distance) / real_width
-    return focal_length
-
 def draw_circle(contours, number, frame):
+    
     c = contours[int(number)]
     # transform into circle
     circle1 = cv2.minEnclosingCircle(c)
@@ -165,114 +182,131 @@ def draw_circle(contours, number, frame):
     # draw a dot to the center : pink
     cv2.circle(frame, center1, 5, (255, 0, 255), -1)
 
-    # calculate distance
-    
-    distance1 = distance_to_camera(85, 1425, radius1)
-    
     #create text
-    s1 = "x1: {}, y1: {}, radius1: {}, distance1: {}".format(np.round(x1), np.round(y1), np.round(radius1), distance1)
+    s1 = "x1: {}, y1: {}, radius1: {}".format(np.round(x1), np.round(y1), np.round(radius1))
     # write to the screen
     cv2.putText(frame, s1, (25, 50 + number * 25), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255, 255, 255), 2)
 
     return np.array([x1, y1])
 
+
+def cam_video():
+     # start the video capture
+    cap = cv2.VideoCapture(0)
+    cap.set(cv2.CAP_PROP_EXPOSURE,-4)
+
+    _, frame = cap.read()
+
+    # convert to hsv
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+    
+    # define range of red color in HSV
+    lower_red_1 = np.array([0,0,220]) 
+    upper_red_1 = np.array([179,50,255])
+    mask = cv2.inRange(hsv, lower_red_1, upper_red_1)
+
+    # find contours + sort them
+    contours, _ = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    sorted_contours= sorted(contours, key=cv2.contourArea, reverse= True)
+    
+    
+    if len(contours) > 0:
+        teller1+=1
+        som1 += draw_circle(sorted_contours, 0, frame)
+        
+    if len(contours) > 1:
+        teller2+=1
+        som2 += draw_circle(sorted_contours, 1, frame)
+        
+    if len(contours) > 2:
+        teller3+=1
+        som3 += draw_circle(sorted_contours, 2, frame)
+        
+    # show video
+    cv2.imshow("Frame", frame)
     
 
-
-
-def main(aantal):
-    # Get the camera calibration matrix and distortion coefficients
-    K, dist = camera_calibration()
-
-    # get the coordinates of the 3D points and the 2D points
-    coords_3d, coords_2d = get_coordinates()
-
-    # Calculate the projection matrix
-    projection_matrix = calculate_projection_matrix(K, dist, coords_3d, coords_2d)
-
-
-    gemiddelde1 = 0
-    gemiddelde2 = 0
-    gemiddelde3 = 0
-
-    cap = cv2.VideoCapture(0)
-
-    som1=np.array([0,0,0], dtype=np.float64)
-    teller1=0
-
-    som2=np.array([0,0,0], dtype=np.float64)
-    teller2=0
-
-    som3=np.array([0,0,0], dtype=np.float64)
-    teller3=0
-
-
-    for i in range(aantal):
-
-        _, frame = cap.read()
-        
-        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-
-        
-        
-        lower_red_1 = np.array([0,0,220]) 
-        upper_red_1 = np.array([179,50,255])
-
-        mask = cv2.inRange(hsv, lower_red_1, upper_red_1)
-
-        contours, _ = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-        sorted_contours= sorted(contours, key=cv2.contourArea, reverse= True)
-        
-        
-        if len(contours) > 0:
-            teller1+=1
-            som1 += draw_circle(sorted_contours, 0, frame)
-          
-        if len(contours) > 1:
-            teller2+=1
-            som2 += draw_circle(sorted_contours, 1, frame)
-           
-        if len(contours) > 2:
-            teller3+=1
-            som3 += draw_circle(sorted_contours, 2, frame)
-           
-
-        
-
-        cv2.imshow("Frame", frame)
-        cv2.imshow("Mask", mask)
-
-        key = cv2.waitKey(1)
-        
-        i += 1
-
-
-
+    key = cv2.waitKey(1)
+    
+    # close the video capture
     cap.release()
-
-
     cv2.destroyAllWindows()
 
     
+def red_recoginion():
 
+    # initialise arrays
 
-    if teller1 != 0 or teller2 != 0 or teller3 != 0:
-        gemiddelde1 = (som1/teller1)
-        gemiddelde2 = (som2/teller2)
-        gemiddelde3 = (som3/teller3)
+    som1=np.array([0,0], dtype=np.float64)
+    teller1=0
+
+    som2=np.array([0,0], dtype=np.float64)
+    teller2=0
+
+    som3=np.array([0,0], dtype=np.float64)
+    teller3=0
+
+    # start the video capture
+    cap = cv2.VideoCapture(0)
+    cap.set(cv2.CAP_PROP_EXPOSURE,-4)
+
+    _, frame = cap.read()
+
+    # convert to hsv
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
     
-    for i in range(3):
-        # calculate the 3D coordinates of the point
+    # define range of red color in HSV
+    lower_red_1 = np.array([0,0,220]) 
+    upper_red_1 = np.array([179,50,255])
+    mask = cv2.inRange(hsv, lower_red_1, upper_red_1)
+
+    # find contours + sort them
+    contours, _ = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    sorted_contours= sorted(contours, key=cv2.contourArea, reverse= True)
+    
+    
+    if len(contours) > 0:
+        teller1+=1
+        som1 += draw_circle(sorted_contours, 0, frame)
+        
+    if len(contours) > 1:
+        teller2+=1
+        som2 += draw_circle(sorted_contours, 1, frame)
+        
+    if len(contours) > 2:
+        teller3+=1
+        som3 += draw_circle(sorted_contours, 2, frame)
+
+    key = cv2.waitKey(1)
+    
+    # close the video capture
+    cap.release()
+    cv2.destroyAllWindows()
+    return som1/teller1, som2/teller2, som3/teller3
+
+    
+    
+
+
+def main():
+    with np.load("projection_matrix.npz") as X:
+                projection_matrix = X["projection_matrix"]
+   
+    gemiddelde1, gemiddelde2, gemiddelde3 = red_recoginion()
+
+    # calculate the 3D coordinates of the point
+    if input("Do you want to calculate the 3D coordinates of the point? (y/n): ") == "y":
+
         point_3d_1 = (find_3d_point(projection_matrix, gemiddelde1)).tolist()
         point_3d_2 = (find_3d_point(projection_matrix, gemiddelde2)).tolist()
         point_3d_3 = (find_3d_point(projection_matrix, gemiddelde3)).tolist()
 
 
-        
+     
 
-    output= point_3d_1 + point_3d_2 + point_3d_3
-
-    return output
+    return point_3d_1 + point_3d_2 + point_3d_3
 
 
+print(main())
