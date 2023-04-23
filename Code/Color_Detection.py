@@ -180,6 +180,7 @@ def focal_length(measured_distance, real_width, width_in_real):
     return focal_length
 
 def draw_circle(contours, number, frame):
+    
     c = contours[int(number)]
     # transform into circle
     circle1 = cv2.minEnclosingCircle(c)
@@ -209,54 +210,36 @@ def draw_circle(contours, number, frame):
     return np.array([x1, y1])
 
     
+def red_recoginion():
 
+    # initialise arrays
 
+    som1=np.array([0,0], dtype=np.float64)
+    teller1=0
 
-def main():
-    # Get the camera calibration matrix and distortion coefficients
-    K= np.array(([[1.48635604e+03, 0.00000000e+00, 9.79901544e+02],
-       [0.00000000e+00, 1.48230147e+03, 4.95819480e+02],
-       [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]]))
+    som2=np.array([0,0], dtype=np.float64)
+    teller2=0
 
-    dist= np.array([[ 0.06309409, -0.20227065, -0.00725773,  0.00190645,  0.33597095]])
+    som3=np.array([0,0], dtype=np.float64)
+    teller3=0
 
-
-    # Calculate the projection matrix
-    projection_matrix = np.array([[ 1.04390024e-01, -9.94436049e-01 , 1.41303371e-02 , 7.94931404e+01],[ 9.77768968e-01 , 1.05217649e-01 , 1.81375553e-01, -1.38314246e+02],[-1.81853149e-01 ,-5.11759323e-03 , 9.83312383e-01,  1.15914001e+03]])
-
-
-    gemiddelde1 = 0
-    gemiddelde2 = 0
-    gemiddelde3 = 0
-
+    # start the video capture
     cap = cv2.VideoCapture(0)
     cap.set(cv2.CAP_PROP_EXPOSURE,-4)
 
-    som1=np.array([0,0,0], dtype=np.float64)
-    teller1=0
-
-    som2=np.array([0,0,0], dtype=np.float64)
-    teller2=0
-
-    som3=np.array([0,0,0], dtype=np.float64)
-    teller3=0
-
-
-    
-
     _, frame = cap.read()
-    
+
+    # convert to hsv
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
     
-    
+    # define range of red color in HSV
     lower_red_1 = np.array([0,0,220]) 
     upper_red_1 = np.array([179,50,255])
-
     mask = cv2.inRange(hsv, lower_red_1, upper_red_1)
 
+    # find contours + sort them
     contours, _ = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
     sorted_contours= sorted(contours, key=cv2.contourArea, reverse= True)
     
     
@@ -272,37 +255,60 @@ def main():
         teller3+=1
         som3 += draw_circle(sorted_contours, 2, frame)
         
-
-    
-
+    # show video
     cv2.imshow("Frame", frame)
     cv2.imshow("Mask", mask)
 
     key = cv2.waitKey(1)
     
-    i += 1
-
-
-
+    # close the video capture
     cap.release()
-
-
     cv2.destroyAllWindows()
+    return som1/teller1, som2/teller2, som3/teller3
 
     
     
-    for i in range(3):
-        # calculate the 3D coordinates of the point
+
+
+def main():
+
+   # Get the camera calibration matrix and distortion coefficients
+    if input("Do you want to calibrate the camera? (y/n): ") == "y":
+        K, dist = camera_calibration()
+
+        if input ("Do you want to save the calibration for later use? (y/n): ") == "y":
+            np.savez("calibration.npz", K=K, dist=dist)
+        
+    elif input("Do you want to load the calibration from a file? (y/n): ") == "y":
+        with np.load("calibration.npz") as X:
+            K, dist = [X[i] for i in ("K", "dist")]
+
+    # Get the projection matrix
+    if input("Do you want to calculate the projection matrix? (y/n): ") == "y":
+        projection_matrix = camera_pose_estimation(K, dist)
+
+        if input ("Do you want to save the projection matrix for later use? (y/n): ") == "y":
+            np.savez("projection_matrix.npz", projection_matrix=projection_matrix)
+
+    elif input("Do you want to load the projection matrix from a file? (y/n): ") == "y":
+            with np.load("projection_matrix.npz") as X:
+                projection_matrix = X["projection_matrix"]
+    
+    # Find the targets
+    if input("Do you want to find the targets? (y/n): ") == "y":
+        gemiddelde1, gemiddelde2, gemiddelde3 = red_recoginion()
+
+    # calculate the 3D coordinates of the point
+    if input("Do you want to calculate the 3D coordinates of the point? (y/n): ") == "y":
+
         point_3d_1 = (find_3d_point(projection_matrix, gemiddelde1)).tolist()
         point_3d_2 = (find_3d_point(projection_matrix, gemiddelde2)).tolist()
         point_3d_3 = (find_3d_point(projection_matrix, gemiddelde3)).tolist()
 
 
-        
+     
 
-    output= point_3d_1 + point_3d_2 + point_3d_3
-
-    return output
+    return point_3d_1 + point_3d_2 + point_3d_3
 
 
 print(main())
