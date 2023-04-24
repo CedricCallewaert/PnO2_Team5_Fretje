@@ -300,4 +300,4 @@ def main():
     return point_3d_1 + point_3d_2 + point_3d_3
 
 
-print(main())
+main()
