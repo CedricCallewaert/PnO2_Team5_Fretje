@@ -212,16 +212,13 @@ def cam_video():
     
     
     if len(contours) > 0:
-        teller1+=1
-        som1 += draw_circle(sorted_contours, 0, frame)
+        draw_circle(sorted_contours, 0, frame)
         
     if len(contours) > 1:
-        teller2+=1
-        som2 += draw_circle(sorted_contours, 1, frame)
+        draw_circle(sorted_contours, 1, frame)
         
     if len(contours) > 2:
-        teller3+=1
-        som3 += draw_circle(sorted_contours, 2, frame)
+        draw_circle(sorted_contours, 2, frame)
         
     # show video
     cv2.imshow("Frame", frame)
@@ -234,7 +231,7 @@ def cam_video():
     cv2.destroyAllWindows()
 
     
-def red_recoginion():
+def red_recoginion(frames):
 
     # initialise arrays
 
@@ -266,18 +263,19 @@ def red_recoginion():
     contours, _ = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     sorted_contours= sorted(contours, key=cv2.contourArea, reverse= True)
     
-    
-    if len(contours) > 0:
-        teller1+=1
-        som1 += draw_circle(sorted_contours, 0, frame)
-        
-    if len(contours) > 1:
-        teller2+=1
-        som2 += draw_circle(sorted_contours, 1, frame)
-        
-    if len(contours) > 2:
-        teller3+=1
-        som3 += draw_circle(sorted_contours, 2, frame)
+    for i in range(frames):
+
+        if len(contours) > 0:
+            teller1+=1
+            som1 += draw_circle(sorted_contours, 0, frame)
+            
+        if len(contours) > 1:
+            teller2+=1
+            som2 += draw_circle(sorted_contours, 1, frame)
+            
+        if len(contours) > 2:
+            teller3+=1
+            som3 += draw_circle(sorted_contours, 2, frame)
 
     key = cv2.waitKey(1)
     
@@ -290,11 +288,11 @@ def red_recoginion():
     
 
 
-def main():
+def main(frames):
     with np.load("projection_matrix.npz") as X:
                 projection_matrix = X["projection_matrix"]
    
-    gemiddelde1, gemiddelde2, gemiddelde3 = red_recoginion()
+    gemiddelde1, gemiddelde2, gemiddelde3 = red_recoginion(frames)
 
     # calculate the 3D coordinates of the point
     if input("Do you want to calculate the 3D coordinates of the point? (y/n): ") == "y":

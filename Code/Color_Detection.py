@@ -199,7 +199,7 @@ def draw_circle(contours, number, frame):
     return np.array([x1, y1])
 
     
-def red_recoginion():
+def red_recoginion(frames):
 
     # initialise arrays
 
@@ -231,18 +231,19 @@ def red_recoginion():
     contours, _ = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     sorted_contours= sorted(contours, key=cv2.contourArea, reverse= True)
     
-    
-    if len(contours) > 0:
-        teller1+=1
-        som1 += draw_circle(sorted_contours, 0, frame)
-        
-    if len(contours) > 1:
-        teller2+=1
-        som2 += draw_circle(sorted_contours, 1, frame)
-        
-    if len(contours) > 2:
-        teller3+=1
-        som3 += draw_circle(sorted_contours, 2, frame)
+    for i in range(frames):
+
+        if len(contours) > 0:
+            teller1+=1
+            som1 += draw_circle(sorted_contours, 0, frame)
+            
+        if len(contours) > 1:
+            teller2+=1
+            som2 += draw_circle(sorted_contours, 1, frame)
+            
+        if len(contours) > 2:
+            teller3+=1
+            som3 += draw_circle(sorted_contours, 2, frame)
         
     # show video
     cv2.imshow("Frame", frame)
@@ -259,7 +260,7 @@ def red_recoginion():
     
 
 
-def main():
+def main(frames):
 
    # Get the camera calibration matrix and distortion coefficients
     if input("Do you want to calibrate the camera? (y/n): ") == "y":
@@ -285,7 +286,7 @@ def main():
     
     # Find the targets
     if input("Do you want to find the targets? (y/n): ") == "y":
-        gemiddelde1, gemiddelde2, gemiddelde3 = red_recoginion()
+        gemiddelde1, gemiddelde2, gemiddelde3 = red_recoginion(frames)
 
     # calculate the 3D coordinates of the point
     if input("Do you want to calculate the 3D coordinates of the point? (y/n): ") == "y":
