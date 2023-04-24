@@ -192,39 +192,37 @@ def draw_circle(contours, number, frame):
 
 def cam_video():
      # start the video capture
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
     cap.set(cv2.CAP_PROP_EXPOSURE,-4)
 
-    _, frame = cap.read()
+    while True:
+        _, frame = cap.read()
 
-    # convert to hsv
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        # convert to hsv
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-    
-    # define range of red color in HSV
-    lower_red_1 = np.array([0,0,220]) 
-    upper_red_1 = np.array([179,50,255])
-    mask = cv2.inRange(hsv, lower_red_1, upper_red_1)
-
-    # find contours + sort them
-    contours, _ = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    sorted_contours= sorted(contours, key=cv2.contourArea, reverse= True)
-    
-    
-    if len(contours) > 0:
-        draw_circle(sorted_contours, 0, frame)
         
-    if len(contours) > 1:
-        draw_circle(sorted_contours, 1, frame)
-        
-    if len(contours) > 2:
-        draw_circle(sorted_contours, 2, frame)
-        
-    # show video
-    cv2.imshow("Frame", frame)
-    
+        # define range of red color in HSV
+        lower_red_1 = np.array([0,0,220]) 
+        upper_red_1 = np.array([179,50,255])
+        mask = cv2.inRange(hsv, lower_red_1, upper_red_1)
 
-    key = cv2.waitKey(1)
+        # find contours + sort them
+        contours, _ = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        sorted_contours= sorted(contours, key=cv2.contourArea, reverse= True)
+        
+        
+        if len(contours) > 0:
+            draw_circle(sorted_contours, 0, frame)
+            
+        if len(contours) > 1:
+            draw_circle(sorted_contours, 1, frame)
+            
+        if len(contours) > 2:
+            draw_circle(sorted_contours, 2, frame)
+        
+        # show video
+        cv2.imshow("Frame", frame)
     
     # close the video capture
     cap.release()
@@ -307,4 +305,4 @@ def main(frames):
     return point_3d_1 + point_3d_2 + point_3d_3
 
 
-print(main())
+cam_video()
