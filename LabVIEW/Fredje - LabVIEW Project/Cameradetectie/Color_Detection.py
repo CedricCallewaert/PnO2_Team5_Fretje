@@ -192,11 +192,12 @@ def draw_circle(contours, number, frame):
 
 def cam_video():
      # start the video capture
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
     cap.set(cv2.CAP_PROP_EXPOSURE,-4)
 
     while True:
         _, frame = cap.read()
+        print("qsdf")
 
         # convert to hsv
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -223,7 +224,10 @@ def cam_video():
         
         # show video
         cv2.imshow("Frame", frame)
-    
+
+        key = cv2.waitKey(1)
+        if key == 27:
+            break
     # close the video capture
     cap.release()
     cv2.destroyAllWindows()

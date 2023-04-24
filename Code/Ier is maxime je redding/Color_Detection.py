@@ -4,7 +4,7 @@ import numpy as np
 def distance_to_camera(knownWidth, focalLength , perWidth):
 	# compute and return the distance from the maker to the camera
     if perWidth > 0 :
-	    return (knownWidth * focalLength) / perWidth
+        return (knownWidth * focalLength) / perWidth
     else:
         return "fout"
 
