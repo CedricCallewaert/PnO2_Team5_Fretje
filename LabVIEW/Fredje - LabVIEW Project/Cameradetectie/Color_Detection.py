@@ -1,31 +1,59 @@
 import cv2 
 import numpy as np
 import glob
-
+from time import sleep
+import os
 
 def getImages():
-    cap = cv2.VideoCapture(0)
 
-    num = 0
+    # create directory for images
+    if not os.path.exists('images'):
+        os.makedirs('images')
 
-    while cap.isOpened():
+    # initialize camera
+    cap = cv2.VideoCapture(1)
 
-        _, img = cap.read()
+    while True:
+        # capture frame
+        ret, frame = cap.read()
 
-        k = cv2.waitKey(5)
+        # display frame
+        cv2.imshow('Camera', frame)
 
-        if k == 27:
+        # check for key press
+        key = cv2.waitKey(1)
+        if key == ord('s'):  # press "s" key to save image
+            # generate unique filename for image
+            count = len(os.listdir('images'))
+            filename = f"image{count}.jpg"
+            filepath = os.path.join('images', filename)
+
+            # save image
+            cv2.imwrite(filepath, frame)
+            print(f"Saved {filename}")
+        elif key == 27:  # press "Esc" key to exit
             break
-        elif k == ord('s'): # s = save image to file  
-            cv2.imwrite('images/img' + str(num) + '.png', img)
-            print("image saved!")
-            num += 1
 
-        cv2.imshow('Img',img)
-
-    # Release and destroy all windows before termination
+    # release camera and close window
     cap.release()
+    cv2.destroyAllWindows()
 
+def one_image():
+    # Create the directory if it does not exist
+    if not os.path.exists("image_pose_estimation"):
+        os.makedirs("image_pose_estimation")
+
+    # Initialize the camera
+    cap = cv2.VideoCapture(1)
+
+    # Capture a frame
+    ret, frame = cap.read()
+
+    # Save the frame to a file
+    cv2.imwrite("image_pose_estimation/image.jpg", frame)
+
+    # Release the camera and close all windows
+    cap.release()
     cv2.destroyAllWindows()
 
 def camera_pose_estimation():
@@ -33,29 +61,19 @@ def camera_pose_estimation():
     with np.load("calibration.npz") as X:
             K, dist = [X[i] for i in ("K", "dist")]
 
-    cap = cv2.VideoCapture(0)
-    _, img = cap.read()
-
-    # Release and destroy all windows before termination
-    cap.release()
+    #load image
+    img = cv2.imread("image_pose_estimation/image.jpg")
 
     # chessboard parameters
     chessboardSize = (8, 6)
     squareSize = 21
     frameSize = (1920, 1080)
 
-    # termination criteria
-    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-
     # prepare object points
     objp = np.zeros((chessboardSize[0] * chessboardSize[1],3), np.float32)
     objp[:,:2] = np.mgrid[0:chessboardSize[0],0:chessboardSize[1]].T.reshape(-1,2)
 
     objp = objp * squareSize
-
-    # Arrays to store object points and image points from all the images.
-    objpoints = [] # 3d point in real world space
-    imgpoints = [] # 2d points in image plane.
     
     # Find the chess board corners
     gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
@@ -70,72 +88,75 @@ def camera_pose_estimation():
     np.savez("projection_matrix.npz", projection_matrix=projection_matrix)
     
 
+
+
 def camera_calibration():
     # chessboard parameters
     chessboardSize = (8, 6)
     squareSize = 21
-    frameSize = (1920, 1080)
-
-
 
     # termination criteria
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
     # prepare object points
-    objp = np.zeros((chessboardSize[0] * chessboardSize[1],3), np.float32)
-    objp[:,:2] = np.mgrid[0:chessboardSize[0],0:chessboardSize[1]].T.reshape(-1,2)
-
+    objp = np.zeros((chessboardSize[0] * chessboardSize[1], 3), np.float32)
+    objp[:,:2] = np.mgrid[0:chessboardSize[0], 0:chessboardSize[1]].T.reshape(-1, 2)
     objp = objp * squareSize
 
     # Arrays to store object points and image points from all the images.
     objpoints = [] # 3d point in real world space
     imgpoints = [] # 2d points in image plane.
 
-    images = glob.glob('images/*.png')
-    
-    num = 0
+    images = glob.glob('images/*.jpg')
+
+
 
     for frame in images:
         img = cv2.imread(frame)
-        gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
         # Find the chess board corners
-        ret, corners = cv2.findChessboardCorners(gray, chessboardSize ,None)
+        ret, corners = cv2.findChessboardCorners(gray, chessboardSize, None)
 
         # If found, add object points, image points (after refining them)
         if ret == True:
             objpoints.append(objp)
 
-            corners2 = cv2.cornerSubPix(gray,corners,(11,11),(-1,-1),criteria)
+            corners2 = cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
             imgpoints.append(corners)
 
             # Draw and display the corners
-            img = cv2.drawChessboardCorners(img, chessboardSize , corners2,ret)
-            cv2.imwrite('images/img_calculated' + str(num) + '.png', img)
-            cv2.imshow('img',img)
+            img = cv2.drawChessboardCorners(img, chessboardSize, corners2, ret)
+            cv2.imwrite('images/calculated/img_calculated' + str(len(imgpoints)) + '.png', img)
+            cv2.imshow('img', img)
             cv2.waitKey(100)
-            num += 1
-    
-    
+        
     cv2.destroyAllWindows()
+
 
     
     # Calibrate the camera using the object points and image points
     ret, K, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
 
-    
+
     np.savez("calibration.npz", K=K, dist=dist)
     
 
+     
 
 def find_3d_point(projection_matrix, image_point):
 
-    # Calculate the 3D coordinates of the point
+    image_point=np.transpose(image_point)
+    
+    # Calculate the homogeneous coordinates of the image point
+    homogeneous_image_point = np.vstack(image_point, np.ones(1,1))
 
-    point_3d_hom = np.dot(np.linalg.inv(projection_matrix), np.vstack((image_point[0], np.ones(1))))
-    
-    point_3d = point_3d_hom[:3] / point_3d_hom[3]
-    
+    # Apply the inverse of the projection matrix to the homogeneous image point
+    homogeneous_3d_point = np.dot(np.linalg.inv(projection_matrix), homogeneous_image_point)
+
+    # Divide the first 3 elements of the homogeneous 3D point by the 4th element to get the 3D point coordinates
+    point_3d = homogeneous_3d_point[:3] / homogeneous_3d_point[3]
+
     return point_3d
 
 # def get_coordinates(num_points):
@@ -202,7 +223,7 @@ def close_stream(cap):
 
 def cam_video():
     # start the video capture
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
     cap.set(cv2.CAP_PROP_EXPOSURE,-4)
 
     while True:
@@ -307,12 +328,10 @@ def main(frames):
    
     gemiddelde1, gemiddelde2, gemiddelde3 = red_recoginion(frames)
 
-    # calculate the 3D coordinates of the point
-    if input("Do you want to calculate the 3D coordinates of the point? (y/n): ") == "y":
 
-        point_3d_1 = (find_3d_point(projection_matrix, gemiddelde1)).tolist()
-        point_3d_2 = (find_3d_point(projection_matrix, gemiddelde2)).tolist()
-        point_3d_3 = (find_3d_point(projection_matrix, gemiddelde3)).tolist()
+    point_3d_1 = (find_3d_point(projection_matrix, gemiddelde1)).tolist()
+    point_3d_2 = (find_3d_point(projection_matrix, gemiddelde2)).tolist()
+    point_3d_3 = (find_3d_point(projection_matrix, gemiddelde3)).tolist()
 
 
      
@@ -320,4 +339,12 @@ def main(frames):
     return point_3d_1 + point_3d_2 + point_3d_3
 
 
-cam_video()
+
+with np.load("projection_matrix.npz") as X:
+                projection_matrix = X["projection_matrix"]
+print(projection_matrix.shape)
+print(projection_matrix)
+gemiddelde1, _, _= red_recoginion(5)
+print(type(gemiddelde1))
+print(find_3d_point(projection_matrix, gemiddelde1))
+

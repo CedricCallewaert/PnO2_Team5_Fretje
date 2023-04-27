@@ -1,31 +1,32 @@
 import cv2 
 import numpy as np
 import glob
+from time import sleep
 
 def distance_to_camera_alternative(height, y_waarde, x_waarde):
     y_graden= y_waarde * (18/720) + 50,2
     x_graden= x_waarde * (75/1280)
 
 def getImages():
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
 
     num = 0
-
-    while cap.isOpened():
+    sleep(6)
+    while True:
 
         _, img = cap.read()
 
         k = cv2.waitKey(5)
 
-        if k == 27:
+    # Save image when S is pressed
+        if cv2.waitKey(1) & 0xFF == ord('s'):
+            cv2.imwrite('images/image.jpg', img)
+            print('Image saved!')
+
+            cv2.imshow('Img',img)
+    # Break the loop when Esc is pressed
+        elif cv2.waitKey(1) & 0xFF == 27:
             break
-        elif k == ord('s'): # s = save image to file  
-            cv2.imwrite('images/img' + str(num) + '.png', img)
-            print("image saved!")
-            num += 1
-
-        cv2.imshow('Img',img)
-
     # Release and destroy all windows before termination
     cap.release()
 

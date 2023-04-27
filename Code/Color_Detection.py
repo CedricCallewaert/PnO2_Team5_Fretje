@@ -2,39 +2,64 @@ import cv2
 import numpy as np
 import glob
 from time import sleep
+import os
 
 def getImages():
+
+    # create directory for images
+    if not os.path.exists('images'):
+        os.makedirs('images')
+
+    # initialize camera
     cap = cv2.VideoCapture(1)
 
-    num = 0
-    sleep(6)
     while True:
+        # capture frame
+        ret, frame = cap.read()
 
-        _, img = cap.read()
+        # display frame
+        cv2.imshow('Camera', frame)
 
-        k = cv2.waitKey(5)
+        # check for key press
+        key = cv2.waitKey(1)
+        if key == ord('s'):  # press "s" key to save image
+            # generate unique filename for image
+            count = len(os.listdir('images'))
+            filename = f"image{count}.jpg"
+            filepath = os.path.join('images', filename)
 
-        if k == 27:
+            # save image
+            cv2.imwrite(filepath, frame)
+            print(f"Saved {filename}")
+        elif key == 27:  # press "Esc" key to exit
             break
-        elif k == ord('s'): # s = save image to file  
-            cv2.imwrite('images/img' + str(num) + '.png', img)
-            print("image saved!")
-            num += 1
 
-        cv2.imshow('Img',img)
-
-    # Release and destroy all windows before termination
+    # release camera and close window
     cap.release()
+    cv2.destroyAllWindows()
 
+def one_image():
+    # Create the directory if it does not exist
+    if not os.path.exists("image_pose_estimation"):
+        os.makedirs("image_pose_estimation")
+
+    # Initialize the camera
+    cap = cv2.VideoCapture(1)
+
+    # Capture a frame
+    ret, frame = cap.read()
+
+    # Save the frame to a file
+    cv2.imwrite("image_pose_estimation/image.jpg", frame)
+
+    # Release the camera and close all windows
+    cap.release()
     cv2.destroyAllWindows()
 
 def camera_pose_estimation(K,dist):
 
-    cap = cv2.VideoCapture(0)
-    _, img = cap.read()
-
-    # Release and destroy all windows before termination
-    cap.release()
+    #load image
+    img = cv2.imread("image_pose_estimation/image.jpg")
 
     # chessboard parameters
     chessboardSize = (8, 6)
@@ -71,57 +96,54 @@ def camera_calibration():
     # chessboard parameters
     chessboardSize = (8, 6)
     squareSize = 21
-    frameSize = (1920, 1080)
-
-
 
     # termination criteria
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
     # prepare object points
-    objp = np.zeros((chessboardSize[0] * chessboardSize[1],3), np.float32)
-    objp[:,:2] = np.mgrid[0:chessboardSize[0],0:chessboardSize[1]].T.reshape(-1,2)
-
+    objp = np.zeros((chessboardSize[0] * chessboardSize[1], 3), np.float32)
+    objp[:,:2] = np.mgrid[0:chessboardSize[0], 0:chessboardSize[1]].T.reshape(-1, 2)
     objp = objp * squareSize
 
     # Arrays to store object points and image points from all the images.
     objpoints = [] # 3d point in real world space
     imgpoints = [] # 2d points in image plane.
 
-    images = glob.glob('images/*.png')
-    
-    num = 0
+    images = glob.glob('images/*.jpg')
+
+    if not images:
+        print("No images found in the specified directory.")
+        return None
 
     for frame in images:
         img = cv2.imread(frame)
-        gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
         # Find the chess board corners
-        ret, corners = cv2.findChessboardCorners(gray, chessboardSize ,None)
+        ret, corners = cv2.findChessboardCorners(gray, chessboardSize, None)
 
         # If found, add object points, image points (after refining them)
         if ret == True:
             objpoints.append(objp)
 
-            corners2 = cv2.cornerSubPix(gray,corners,(11,11),(-1,-1),criteria)
+            corners2 = cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
             imgpoints.append(corners)
 
             # Draw and display the corners
-            img = cv2.drawChessboardCorners(img, chessboardSize , corners2,ret)
-            cv2.imwrite('images/img_calculated' + str(num) + '.png', img)
-            cv2.imshow('img',img)
+            img = cv2.drawChessboardCorners(img, chessboardSize, corners2, ret)
+            cv2.imwrite('images/calculated/img_calculated' + str(len(imgpoints)) + '.png', img)
+            cv2.imshow('img', img)
             cv2.waitKey(100)
-            num += 1
-    
-    
+        
     cv2.destroyAllWindows()
 
+    if not objpoints or not imgpoints:
+        print("No chessboard corners found in the images.")
+        return None
     
     # Calibrate the camera using the object points and image points
     ret, K, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
 
-    
-   
     return K, dist
     
 # def calculate_projection_matrix(K, dist_coeffs, three_D_points, two_D_points):
@@ -263,8 +285,8 @@ def red_recoginion(frames):
     
 def cam_video():
     # start the video capture
-    cap = cv2.VideoCapture(0)
-    cap.set(cv2.CAP_PROP_EXPOSURE,-4)
+    cap = cv2.VideoCapture(1)
+    cap.set(cv2.CAP_PROP_EXPOSURE,-100)
 
     sleep(6)
 
@@ -348,4 +370,4 @@ def main(frames):
     return point_3d_1 + point_3d_2 + point_3d_3
 
 
-getImages()
+main(5)
