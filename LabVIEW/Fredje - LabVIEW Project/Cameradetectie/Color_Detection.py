@@ -189,15 +189,25 @@ def draw_circle(contours, number, frame):
 
     return np.array([x1, y1])
 
+def start_stream():
+    cap = cv2.VideoCapture(0)
+    cap.set(cv2.CAP_PROP_EXPOSURE,-4)
+
+
+
+
+def close_stream(cap):
+    cap.release()
+    cv2.destroyAllWindows()
 
 def cam_video():
-     # start the video capture
+    # start the video capture
     cap = cv2.VideoCapture(0)
     cap.set(cv2.CAP_PROP_EXPOSURE,-4)
 
     while True:
         _, frame = cap.read()
-        print("qsdf")
+        
 
         # convert to hsv
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -228,6 +238,7 @@ def cam_video():
         key = cv2.waitKey(1)
         if key == 27:
             break
+
     # close the video capture
     cap.release()
     cv2.destroyAllWindows()
