@@ -169,27 +169,36 @@ def find_3d_point(projection_matrix, image_point):
     
     return point_3d
 
+def click_event(event,x,y,flags,params):
+    # Left button mouse click event opencv
+    if event == cv2.EVENT_LBUTTONDOWN:
+        print(x,y)
+
+# define the function to start video capture and show the frames
+def click_test():
+    cap = cv2.VideoCapture(0) # use default camera
+    
+
+    ret, frame = cap.read()
+
+    cv2.imshow("Video Capture", frame)
+    
+    cv2.setMouseCallback("Video Capture", click_event)
+
+    cv2.waitKey(0)
+    cap.release()
+    cv2.destroyAllWindows()   
+  
+   
+
 def calculate_homogeneous_matrix():
-    #load image
-    img = cv2.imread("image_pose_estimation/image.jpg")
-
-    # chessboard parameters
-    chessboardSize = (8, 6)
-    squareSize = 21
-    frameSize = (1920, 1080)
-
-
-    # prepare object points
-    objp = np.zeros((chessboardSize[0] * chessboardSize[1],3), np.float32)
-    objp[:,:2] = np.mgrid[0:chessboardSize[0],0:chessboardSize[1]].T.reshape(-1,2)
-
-    objp = objp * squareSize
+    points_real = np.array([0,0,0],
+                           [0,7000,0],
+                           [6000,7000,0],
+                           [6000,0,0])
     
-    # Find the chess board corners
-    gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-    ret, corners = cv2.findChessboardCorners(gray, chessboardSize ,None)
     
-    homogeneous_matrix = cv2.findHomography(objp, corners)
+    homogeneous_matrix = cv2.findHomography(points_camera_cart, points_real_cart)
     
     return homogeneous_matrix
 
@@ -314,11 +323,6 @@ def cam_video():
     cap = cv2.VideoCapture(1)
     cap.set(cv2.CAP_PROP_EXPOSURE,-1000)
 
-
-
-
-    cap = cv2.VideoCapture(0)
-    cap.set(cv2.CAP_PROP_EXPOSURE,-1000)
     sleep(2)
 
     while True:
@@ -402,15 +406,5 @@ def main(frames):
 
 
 
-cam_video()
-
-print(calculate_homogeneous_matrix())
-
-cam_video()
-
-
-cam_video()
-
-#print(calculate_homogeneous_matrix())
-print(camera_calibration())
+click_test()
 
