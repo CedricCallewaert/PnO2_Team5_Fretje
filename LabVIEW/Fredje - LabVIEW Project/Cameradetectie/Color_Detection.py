@@ -368,14 +368,3 @@ def main(frames):
      
 
     return point_3d_1 + point_3d_2 + point_3d_3
-
-
-
-with np.load("projection_matrix.npz") as X:
-                projection_matrix = X["projection_matrix"]
-print(projection_matrix.shape)
-print(projection_matrix)
-gemiddelde1, _, _= red_recoginion(5)
-print(type(gemiddelde1))
-print(find_3d_point(projection_matrix, gemiddelde1))
-
