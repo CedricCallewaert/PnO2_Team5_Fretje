@@ -1,0 +1,4 @@
+- Eerst labview
+- Dan myrio/realtime
+- Ook myrio tuturial bundle dinges
+- Ook variable manager

@@ -1,0 +1,1 @@
+Ni max -> Tools -> reset configuration data
