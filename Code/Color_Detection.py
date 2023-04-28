@@ -286,9 +286,10 @@ def red_recoginion(frames):
 def cam_video():
     # start the video capture
     cap = cv2.VideoCapture(1)
-    cap.set(cv2.CAP_PROP_EXPOSURE,-100)
+    cap.set(cv2.CAP_PROP_EXPOSURE,-1000)
 
-    sleep(6)
+
+    sleep(2)
 
     while True:
         _, frame = cap.read()
@@ -370,4 +371,4 @@ def main(frames):
     return point_3d_1 + point_3d_2 + point_3d_3
 
 
-main(5)
+cam_video()
