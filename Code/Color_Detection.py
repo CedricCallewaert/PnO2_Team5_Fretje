@@ -313,6 +313,7 @@ def cam_video():
     cap = cv2.VideoCapture(1)
     cap.set(cv2.CAP_PROP_EXPOSURE,-1000)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 
 =======
@@ -320,6 +321,10 @@ def cam_video():
     cap.set(cv2.CAP_PROP_EXPOSURE,-1000)
 
 >>>>>>> master
+=======
+
+
+>>>>>>> Stashed changes
 =======
 
 
@@ -407,11 +412,15 @@ def main(frames):
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 cam_video()
 =======
 print(calculate_homogeneous_matrix())
 >>>>>>> master
+=======
+cam_video()
+>>>>>>> Stashed changes
 =======
 cam_video()
 >>>>>>> Stashed changes
