@@ -168,6 +168,7 @@ def find_3d_point(projection_matrix, image_point):
     point_3d = point_3d_hom[:3] / point_3d_hom[3]
     
     return point_3d
+
 def calculate_homogeneous_matrix():
     #load image
     img = cv2.imread("image_pose_estimation/image.jpg")
@@ -413,6 +414,7 @@ def main(frames):
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 cam_video()
 =======
@@ -423,4 +425,8 @@ cam_video()
 >>>>>>> Stashed changes
 =======
 cam_video()
+>>>>>>> Stashed changes
+=======
+#print(calculate_homogeneous_matrix())
+print(camera_calibration())
 >>>>>>> Stashed changes
