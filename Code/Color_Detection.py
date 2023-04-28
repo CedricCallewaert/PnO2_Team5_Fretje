@@ -168,6 +168,30 @@ def find_3d_point(projection_matrix, image_point):
     point_3d = point_3d_hom[:3] / point_3d_hom[3]
     
     return point_3d
+def calculate_homogeneous_matrix():
+    #load image
+    img = cv2.imread("image_pose_estimation/image.jpg")
+
+    # chessboard parameters
+    chessboardSize = (8, 6)
+    squareSize = 21
+    frameSize = (1920, 1080)
+
+
+    # prepare object points
+    objp = np.zeros((chessboardSize[0] * chessboardSize[1],3), np.float32)
+    objp[:,:2] = np.mgrid[0:chessboardSize[0],0:chessboardSize[1]].T.reshape(-1,2)
+
+    objp = objp * squareSize
+    
+    # Find the chess board corners
+    gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+    ret, corners = cv2.findChessboardCorners(gray, chessboardSize ,None)
+    
+    homogeneous_matrix = cv2.findHomography(objp, corners)
+    
+    return homogeneous_matrix
+
 
 # def get_coordinates(num_points):
     
@@ -285,10 +309,10 @@ def red_recoginion(frames):
     
 def cam_video():
     # start the video capture
-    cap = cv2.VideoCapture(1)
-    cap.set(cv2.CAP_PROP_EXPOSURE,-100)
+    cap = cv2.VideoCapture(0)
+    cap.set(cv2.CAP_PROP_EXPOSURE,-1000)
 
-    sleep(6)
+    sleep(2)
 
     while True:
         _, frame = cap.read()
@@ -370,4 +394,4 @@ def main(frames):
     return point_3d_1 + point_3d_2 + point_3d_3
 
 
-main(5)
+print(calculate_homogeneous_matrix())
