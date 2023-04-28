@@ -8,7 +8,7 @@ function [theta_graden] = testhoekberekening(dist)
     g = 9.81;
     v0 = 14;
     x0 = 0;
-    y0 = 2;
+    y0 = 2.5;
     tspan = [0:0.005:0.8];
     theta = -38:0.1:0;
     D = zeros(length(theta), 1);
@@ -24,7 +24,7 @@ function [theta_graden] = testhoekberekening(dist)
 
         D(i) = min((N(:,1)-dist).^2+((N(:,2)).^2));
     end
-    error = sqrt(min(D))
+    error = sqrt(min(D));
     [~, idx] = min(D);
     theta_graden = theta(idx);
     
