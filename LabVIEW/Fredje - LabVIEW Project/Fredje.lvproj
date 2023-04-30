@@ -37,11 +37,17 @@
 			</Item>
 			<Item Name="myRIO Project Documentation.html" Type="Document" URL="../documentation/myRIO Project Documentation.html"/>
 		</Item>
+		<Item Name="Blusroutine.vi" Type="VI" URL="../Blusroutine.vi"/>
+		<Item Name="Global_Variables.vi" Type="VI" URL="../Global_Variables.vi"/>
 		<Item Name="Main_pc.vi" Type="VI" URL="../Main_pc.vi"/>
 		<Item Name="Shared variables.lvlib" Type="Library" URL="../Shared variables.lvlib"/>
 		<Item Name="Dependencies" Type="Dependencies">
+			<Item Name="PythonVersionsEnum.ctl" Type="VI" URL="/../Program Files (x86)/National Instruments/LabVIEW 2021/examples/Connectivity/Python/support/PythonVersionsEnum.ctl"/>
 			<Item Name="PythonVersionsEnum.ctl" Type="VI" URL="../../../../../../../../../Program Files (x86)/National Instruments/LabVIEW 2021/examples/Connectivity/Python/support/PythonVersionsEnum.ctl"/>
+			<Item Name="PythonVersionsEnum.ctl" Type="VI" URL="../../../../../../../../Program Files (x86)/National Instruments/LabVIEW 2021/examples/Connectivity/Python/support/PythonVersionsEnum.ctl"/>
+			<Item Name="ToPythonVersionString.vi" Type="VI" URL="/../Program Files (x86)/National Instruments/LabVIEW 2021/examples/Connectivity/Python/support/ToPythonVersionString.vi"/>
 			<Item Name="ToPythonVersionString.vi" Type="VI" URL="../../../../../../../../../Program Files (x86)/National Instruments/LabVIEW 2021/examples/Connectivity/Python/support/ToPythonVersionString.vi"/>
+			<Item Name="ToPythonVersionString.vi" Type="VI" URL="../../../../../../../../Program Files (x86)/National Instruments/LabVIEW 2021/examples/Connectivity/Python/support/ToPythonVersionString.vi"/>
 		</Item>
 		<Item Name="Build Specifications" Type="Build"/>
 	</Item>
