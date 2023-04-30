@@ -170,40 +170,76 @@ def find_3d_point(projection_matrix, image_point):
     return point_3d
 
 def click_event(event,x,y,flags,params):
+    global ii
     # Left button mouse click event opencv
     if event == cv2.EVENT_LBUTTONDOWN:
-        print(x,y)
+        calibration_point= np.array([x,y])
+        print(calibration_point)
+        np.savez(f"points/calibration_point{ii}.npz", calibration_point=calibration_point)
+        ii+=1
 
-# define the function to start video capture and show the frames
+
 def click_test():
+    global ii
+    ii=0
     cap = cv2.VideoCapture(0) # use default camera
-    
-
-    ret, frame = cap.read()
-
-    cv2.imshow("Video Capture", frame)
-    
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280.0)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720.0)
+    cv2.namedWindow("Video Capture")
     cv2.setMouseCallback("Video Capture", click_event)
-
-    cv2.waitKey(0)
+    while True:
+        ret, frame = cap.read()
+        cv2.imshow("Video Capture", frame)
+        
+        key = cv2.waitKey(1)
+        if key == 27:
+            break
     cap.release()
     cv2.destroyAllWindows()   
   
    
 
 def calculate_homogeneous_matrix():
-    points_real = np.array([0,0,0],
-                           [0,7000,0],
-                           [6000,7000,0],
-                           [6000,0,0])
-    
-    
-    homogeneous_matrix = cv2.findHomography(points_camera_cart, points_real_cart)
-    
-    return homogeneous_matrix
+    points_real = np.array([[80,80,0],
+                            [80,680,0],
+                            [680,680,0],
+                            [680,80,0]])
+        
+    points_camera = np.zeros((4, 2)) 
 
+    for i in range(4):
+        filename = f"points/calibration_point{i}.npz"
+        data = np.load(filename)
+        point = data["calibration_point"]
+        points_camera[i] = point
+   
+    homography_matrix,_ = cv2.findHomography(points_camera,points_real )
+    np.savez("homography.npz", homography_matrix=homography_matrix)
+    return homography_matrix
 
-# def get_coordinates(num_points):
+def warp():
+    
+    # Initialize the camera
+    cap = cv2.VideoCapture(0)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280.0)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720.0)
+    # Capture a frame
+    ret, frame = cap.read()
+    
+    
+    with np.load("homography.npz") as X:
+        H = X["homography_matrix"]
+    print(H)
+    
+    frame_warp = cv2.warpPerspective(frame, H,(frame.shape[1],frame.shape[0]))
+    while True:
+        cv2.imshow("warp", frame_warp)
+        key = cv2.waitKey(1)
+        if key == 27:
+            break
+    
+
+def get_coordinates(num_points):
     
     
     coords_3d = np.empty((num_points, 3))
@@ -320,9 +356,14 @@ def red_recoginion(frames):
 def cam_video():
     # start the video capture
 
-    cap = cv2.VideoCapture(1)
-    cap.set(cv2.CAP_PROP_EXPOSURE,-1000)
+    cap = cv2.VideoCapture(0)
 
+    
+    #cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1) # manual mode
+    #cap.set(cv2.CAP_PROP_EXPOSURE, -20)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280.0)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720.0)
+    
     sleep(2)
 
     while True:
@@ -405,6 +446,6 @@ def main(frames):
     return point_3d_1 + point_3d_2 + point_3d_3
 
 
-
-click_test()
+calculate_homogeneous_matrix()
+warp()
 
