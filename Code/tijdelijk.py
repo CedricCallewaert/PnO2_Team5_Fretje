@@ -458,4 +458,3 @@ def main(frames):
 
 calculate_homogeneous_matrix()
 warp()
-
