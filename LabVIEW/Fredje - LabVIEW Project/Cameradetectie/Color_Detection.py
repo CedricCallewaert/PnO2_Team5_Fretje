@@ -163,7 +163,7 @@ def click_test():
 def calculate_angles(point_3D):
     # calculate angles
     x = abs(point_3D[0]-3)
-    y = point_3D[1]
+    y = point_3D[1]+2.5
 
     # calculate angles
     alpha = np.arctan2(y, x)
