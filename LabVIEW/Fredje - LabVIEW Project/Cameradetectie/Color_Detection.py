@@ -4,6 +4,31 @@ import glob
 from time import sleep
 import os
 
+# global variables
+cameraNr = 0
+exposure = 0
+aantalFrames = 5
+previousExposure = None
+xList = [0 for i in range(aantalFrames)]
+yList = [0 for i in range(aantalFrames)]
+
+def get_coordinates():
+    # load the homography matrix
+    with np.load("homography.npz") as X:
+        H = X["homography_matrix"]
+
+    # calculate average of x and y coordinates
+    xGem = sum(xList)/len(xList)
+    yGem = sum(yList)/len(yList)
+
+    # calculate 3D coordinates
+    point_2D=np.array([xGem, yGem, 1])
+    point_3D = np.dot(H, point_2D)
+
+    output = calculate_angles(point_3D)
+
+    return output, [xGem, yGem]
+
 def draw_circle(contours, number, frame):
     
     c = contours[int(number)]
@@ -32,32 +57,31 @@ def draw_circle(contours, number, frame):
     # write to the screen
     cv2.putText(frame, s1, (25, 50 + number * 25), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255, 255, 255), 2)
 
-    return np.array([x1, y1])
-
-def draw_circle_background(contours, number, frame):
-    
-    c = contours[int(number)]
-    # transform into circle
-    circle1 = cv2.minEnclosingCircle(c)
-    ((x1, y1), radius1) = circle1
-
-    #moment
-    M1 = cv2.moments(c)
-    if M1["m00"] == 0:
-        M1["m00"] = 1.0
-    center1 = (int(M1["m10"] / M1["m00"]), int(M1["m01"] / M1["m00"]))
-
-    return np.array(center1)
+    return center1
 
 def start_stream():
     global cap1
-    cap1 = cv2.VideoCapture(0)
-    cap1.set(cv2.CAP_PROP_EXPOSURE,-4)
+    cap1 = cv2.VideoCapture(cameraNr)
     cap1.set(cv2.CAP_PROP_FRAME_WIDTH, 1280.0)
     cap1.set(cv2.CAP_PROP_FRAME_HEIGHT, 720.0)
 
+def change_exposure(x):
+	global exposure
+	exposure = x
+        
+
+
 def get_frame():
-    
+    global cap1
+    global previousExposure
+    global xList, yList, xGem, yGem
+
+    if exposure != previousExposure:
+        print(f"Exposure setting now {exposure}")
+        previousExposure = exposure
+        _, frame = cap1.read()
+        cap1.set(cv2.CAP_PROP_EXPOSURE,exposure)
+
     _, frame = cap1.read()
     # convert to hsv
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -74,56 +98,26 @@ def get_frame():
     
     
     if len(contours) > 0:
-        draw_circle(sorted_contours, 0, frame)
-    
+        xy = draw_circle(sorted_contours, 0, frame)
+        xList = [xy[0]] + xList[:-1]
+        yList = [xy[1]] + yList[:-1]
+
     # show video
     cv2.imshow("Frame", frame)
 
+    #show the image for x mseconds before it automatically closes
+    cv2.waitKey(1) 
+
 def close_stream():
+    global cap1
     cap1.release()
     cv2.destroyAllWindows()
-    
-def red_recoginion():
-
-    # initialise array
-
-    som1=np.array([0,0], dtype=np.float64)
-    teller1=0
-
-    start_time = cv2.getTickCount()
-
-    # Loop to capture frames for the specified duration
-    while (cv2.getTickCount() - start_time) / cv2.getTickFrequency() < 2:
-    # read frame
-        _, frame = cap1.read()
-
-        # convert to hsv
-        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-
-        
-        # define range of red color in HSV
-        lower_red_1 = np.array([0,0,220]) 
-        upper_red_1 = np.array([179,50,255])
-        mask = cv2.inRange(hsv, lower_red_1, upper_red_1)
-
-        # find contours + sort them
-        contours, _ = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        sorted_contours= sorted(contours, key=cv2.contourArea, reverse= True)
-        
-
-        if len(contours) > 0:
-            teller1+=1
-            som1 += draw_circle_background(sorted_contours, 0, frame)
-
-    
-    # close the video capture
-    return som1/teller1
 
 def calculate_homogeneous_matrix():
-    points_real = np.array([[80,80,0],
-                            [80,680,0],
-                            [680,680,0],
-                            [680,80,0]])
+    points_real = np.array([[2320/7,0,0],
+                            [2320/7,720,0],
+                            [6640/7,720,0],
+                            [6640/7,0,0]])
         
     points_camera = np.zeros((4, 2)) 
 
@@ -161,32 +155,20 @@ def click_test():
             break
 
 def calculate_angles(point_3D):
-    # calculate angles
-    x = abs(point_3D[0]-3)
-    y = point_3D[1]+2.5
+    # transform from pixels to meters
+    x=(point_3D[0]*6)/(4320/7)-3
+    y=(point_3D[1]*7)/720
 
     # calculate angles
     alpha = np.arctan2(y, x)
  
     # calculate distance
     distance_plane = np.sqrt(x**2 + y**2)
-    distance_direct = np.sqrt(distance_plane**2 + (2.5)**2)
+    distance_direct = np.sqrt(distance_plane**2 + (2.9)**2)
 
     # convert to degrees
     alpha = np.rad2deg(alpha)
  
 
-    return [alpha, distance_direct]
+    return [alpha, distance_plane]
 
-def main():
-    with np.load("homography.npz") as X:
-        H = X["homography_matrix"]
-   
-    point_2D = red_recoginion()
-
-    point_2D=  np.append(point_2D,1)
-    point_3D = np.dot(H, point_2D)
-
-    output = calculate_angles(point_3D)
-
-    return output
