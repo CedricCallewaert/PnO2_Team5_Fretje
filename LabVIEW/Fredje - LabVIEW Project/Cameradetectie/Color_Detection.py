@@ -9,8 +9,9 @@ cameraNr = 0
 exposure = 0
 aantalFrames = 5
 previousExposure = None
-xList = [0 for i in range(aantalFrames)]
-yList = [0 for i in range(aantalFrames)]
+for j in range(9):
+    exec(f'xlist{j} = [0] * aantalFrames')
+    exec(f'ylist{j} = [0] * aantalFrames')
 
 def get_coordinates():
     # load the homography matrix
@@ -76,7 +77,7 @@ def change_exposure(x):
 def get_frame():
     global cap1
     global previousExposure
-    global xList, yList, xGem, yGem
+    global xList, yList
 
     if exposure != previousExposure:
         print(f"Exposure setting now {exposure}")
@@ -100,10 +101,41 @@ def get_frame():
     
     
     if len(contours) > 0:
-        xy = draw_circle(sorted_contours, 0, frame)
-        xList = [xy[0]] + xList[:-1]
-        yList = [xy[1]] + yList[:-1]
-
+        xy0 = draw_circle(sorted_contours[0], 0, frame)
+        xList0 = [xy0[0]] + xList[:-1]
+        yList0 = [xy0[1]] + yList[:-1]
+    if len(contours) > 1:
+        xy1 = draw_circle(sorted_contours[1], 0, frame)
+        xList1 = [xy1[0]] + xList[:-1]
+        yList1 = [xy1[1]] + yList[:-1]
+    if len(contours) > 2:
+        xy2 = draw_circle(sorted_contours[2], 0, frame)
+        xList2 = [xy2[0]] + xList[:-1]
+        yList2 = [xy2[1]] + yList[:-1]       
+    if len(contours) > 3:
+        xy3 = draw_circle(sorted_contours[3], 0, frame)
+        xList3 = [xy3[0]] + xList[:-1]
+        yList3 = [xy3[1]] + yList[:-1]    
+    if len(contours) > 4:
+        xy4 = draw_circle(sorted_contours[4], 0, frame)
+        xList4 = [xy4[0]] + xList[:-1]
+        yList4 = [xy4[1]] + yList[:-1]
+    if len(contours) > 5:
+        xy5 = draw_circle(sorted_contours[5], 0, frame)
+        xList5 = [xy5[0]] + xList[:-1]
+        yList5 = [xy5[1]] + yList[:-1]
+    if len(contours) > 6:
+        xy6 = draw_circle(sorted_contours[6], 0, frame)
+        xList6 = [xy6[0]] + xList[:-1]
+        yList6 = [xy6[1]] + yList[:-1]
+    if len(contours) > 7:
+        xy7 = draw_circle(sorted_contours[7], 0, frame)
+        xList7 = [xy7[0]] + xList[:-1]
+        yList7 = [xy7[1]] + yList[:-1]
+    if len(contours) > 8:
+        xy8 = draw_circle(sorted_contours[8], 0, frame)
+        xList8 = [xy8[0]] + xList[:-1]
+        yList8 = [xy8[1]] + yList[:-1]
     # show video
     cv2.imshow("Frame", frame)
 
@@ -185,7 +217,8 @@ def calculate_angles(point_3D):
     alpha = np.rad2deg(alpha)
  
 
-    return [alpha, distance_plane/5, x/5, y/5]
+    return [alpha, distance_plane], [x,y]
+
 start_stream()
 calculate_homogeneous_matrix()
 
