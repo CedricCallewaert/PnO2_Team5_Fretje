@@ -4,23 +4,17 @@ import glob
 from time import sleep
 import os
 
+
 # global variables
 cameraNr = 0
 exposure = 0
-aantalFrames = 5
 previousExposure = None
-for j in range(9):
-    exec(f'xlist{j} = [0] * aantalFrames')
-    exec(f'ylist{j} = [0] * aantalFrames')
+
 
 def get_coordinates():
     # load the homography matrix
     with np.load("homography.npz") as X:
         H = X["homography_matrix"]
-
-    # calculate average of x and y coordinates
-    xGem = sum(xList)/len(xList)
-    yGem = sum(yList)/len(yList)
 
     # calculate 3D coordinates
     point_2D=np.array([xGem, yGem, 1])
@@ -32,9 +26,9 @@ def get_coordinates():
 
     return output, [xGem, yGem], point_3D
 
-def draw_circle(contours, number, frame):
+def draw_circle(contour, frame):
     
-    c = contours[int(number)]
+    c = contour
     # transform into circle
     circle1 = cv2.minEnclosingCircle(c)
     ((x1, y1), radius1) = circle1
@@ -60,7 +54,7 @@ def draw_circle(contours, number, frame):
     # write to the screen
     cv2.putText(frame, s1, (25, 50 + number * 25), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255, 255, 255), 2)
 
-    return center1
+    return center1[0], center1[1]
 
 def start_stream():
     global cap1
@@ -77,8 +71,9 @@ def change_exposure(x):
 def get_frame():
     global cap1
     global previousExposure
-    global xList, yList
-
+    global x1, x2, x3, x4, x5, x6, x7, x8, x9
+    global y1, y2, y3, y4, y5, y6, y7, y8, y9
+    global contours
     if exposure != previousExposure:
         print(f"Exposure setting now {exposure}")
         previousExposure = exposure
@@ -99,48 +94,52 @@ def get_frame():
     contours, _ = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     sorted_contours= sorted(contours, key=cv2.contourArea, reverse= True)
     
-    
     if len(contours) > 0:
-        xy0 = draw_circle(sorted_contours[0], 0, frame)
-        xList0 = [xy0[0]] + xList[:-1]
-        yList0 = [xy0[1]] + yList[:-1]
+        x1, y1 = draw_circle(sorted_contours[0], frame)
     if len(contours) > 1:
-        xy1 = draw_circle(sorted_contours[1], 0, frame)
-        xList1 = [xy1[0]] + xList[:-1]
-        yList1 = [xy1[1]] + yList[:-1]
+        x2, y2 = draw_circle(sorted_contours[1], frame)
     if len(contours) > 2:
-        xy2 = draw_circle(sorted_contours[2], 0, frame)
-        xList2 = [xy2[0]] + xList[:-1]
-        yList2 = [xy2[1]] + yList[:-1]       
+        x3, y3 = draw_circle(sorted_contours[2], frame)
     if len(contours) > 3:
-        xy3 = draw_circle(sorted_contours[3], 0, frame)
-        xList3 = [xy3[0]] + xList[:-1]
-        yList3 = [xy3[1]] + yList[:-1]    
+        x4, y4 = draw_circle(sorted_contours[3], frame)
     if len(contours) > 4:
-        xy4 = draw_circle(sorted_contours[4], 0, frame)
-        xList4 = [xy4[0]] + xList[:-1]
-        yList4 = [xy4[1]] + yList[:-1]
+        x5, y5 = draw_circle(sorted_contours[4], frame)
     if len(contours) > 5:
-        xy5 = draw_circle(sorted_contours[5], 0, frame)
-        xList5 = [xy5[0]] + xList[:-1]
-        yList5 = [xy5[1]] + yList[:-1]
+        x6, y6 = draw_circle(sorted_contours[5], frame)
     if len(contours) > 6:
-        xy6 = draw_circle(sorted_contours[6], 0, frame)
-        xList6 = [xy6[0]] + xList[:-1]
-        yList6 = [xy6[1]] + yList[:-1]
+        x7, y7 = draw_circle(sorted_contours[6], frame)
     if len(contours) > 7:
-        xy7 = draw_circle(sorted_contours[7], 0, frame)
-        xList7 = [xy7[0]] + xList[:-1]
-        yList7 = [xy7[1]] + yList[:-1]
+        x8, y8 = draw_circle(sorted_contours[7], frame)
     if len(contours) > 8:
-        xy8 = draw_circle(sorted_contours[8], 0, frame)
-        xList8 = [xy8[0]] + xList[:-1]
-        yList8 = [xy8[1]] + yList[:-1]
-    # show video
-    cv2.imshow("Frame", frame)
+        x9, y9 = draw_circle(sorted_contours[8], frame)
+
+    
+
 
     #show the image for x mseconds before it automatically closes
     #cv2.waitKey(1) 
+def distance(p1, p2):
+    return np.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
+
+def calculate_triplets():
+    coordinates= [(x1, y1), (x2, y2), (x3, y3), (x4, y4), (x5, y5), (x6, y6), (x7, y7), (x8, y8), (x9, y9)]
+    coordinates= coordinates[:len(contours)]
+    close_triplets = []
+    threshold = 1.0
+
+    # Loop over every possible combination of three points
+    for i in range(len(coordinates)):
+        for j in range(i+1, len(coordinates)):
+            for k in range(j+1, len(coordinates)):
+                # Calculate the distances between the three points
+                d1 = distance(coordinates[i], coordinates[j])
+                d2 = distance(coordinates[i], coordinates[k])
+                d3 = distance(coordinates[j], coordinates[k])
+                # If all three distances are less than the threshold, add this triplet to the list
+                if d1 < threshold and d2 < threshold and d3 < threshold:
+                    close_triplets.append((coordinates[i], coordinates[j], coordinates[k]))
+
+
 
 def close_stream():
     global cap1
@@ -219,17 +218,8 @@ def calculate_angles(point_3D):
 
     return [alpha, distance_plane], [x,y]
 
-start_stream()
+
 calculate_homogeneous_matrix()
 
-change_exposure(-8)
-while True: 
-    get_frame()
-    key = cv2.waitKey(1)
-    if key == ord("c"):
-        print(get_coordinates())
-    elif key == 27:
-        break
-        
-close_stream()
+
             
