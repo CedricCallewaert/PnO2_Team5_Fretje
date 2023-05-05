@@ -200,10 +200,10 @@ def click_test():
    
 
 def calculate_homogeneous_matrix():
-    points_real = np.array([[80,80,0],
-                            [80,680,0],
-                            [680,680,0],
-                            [680,80,0]])
+    points_real = np.array([[2320/7,0,0],
+                            [2320/7,720,0],
+                            [6640/7,720,0],
+                            [6640/7,0,0]])
         
     points_camera = np.zeros((4, 2)) 
 
@@ -455,7 +455,7 @@ def main(frames):
 
     return point_3d_1 + point_3d_2 + point_3d_3
 
-
+click_test()
 calculate_homogeneous_matrix()
 warp()
 

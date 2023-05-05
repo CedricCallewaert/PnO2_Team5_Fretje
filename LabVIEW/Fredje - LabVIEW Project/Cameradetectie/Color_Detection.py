@@ -24,10 +24,12 @@ def get_coordinates():
     # calculate 3D coordinates
     point_2D=np.array([xGem, yGem, 1])
     point_3D = np.dot(H, point_2D)
+    point_3D /= point_3D[2]
 
     output = calculate_angles(point_3D)
+    
 
-    return output, [xGem, yGem]
+    return output, [xGem, yGem], point_3D
 
 def draw_circle(contours, number, frame):
     
@@ -106,7 +108,7 @@ def get_frame():
     cv2.imshow("Frame", frame)
 
     #show the image for x mseconds before it automatically closes
-    cv2.waitKey(1) 
+    #cv2.waitKey(1) 
 
 def close_stream():
     global cap1
@@ -140,7 +142,20 @@ def click_event(event,x,y,flags,params):
         print(calibration_point)
         np.savez(f"points/calibration_point{ii}.npz", calibration_point=calibration_point)
         ii+=1
+def warp():
+    # Capture a frame
+    
 
+    with np.load("homography.npz") as X:
+        H = X["homography_matrix"]
+    
+    while True:
+        ret, frame = cap1.read()
+        frame_warp = cv2.warpPerspective(frame, H,(frame.shape[1],frame.shape[0]))
+        cv2.imshow("warp", frame_warp)
+        key = cv2.waitKey(1)
+        if key == 27:
+            break
 def click_test():
     global ii
     ii=0
@@ -156,11 +171,11 @@ def click_test():
 
 def calculate_angles(point_3D):
     # transform from pixels to meters
-    x=(point_3D[0]*6)/(4320/7)-3
-    y=(point_3D[1]*7)/720
+    x=(point_3D[0]*7)/720-56/9
+    y=7-(point_3D[1]*7)/720+3
 
     # calculate angles
-    alpha = np.arctan2(y, x)
+    alpha = np.arctan2(x, y)
  
     # calculate distance
     distance_plane = np.sqrt(x**2 + y**2)
@@ -170,5 +185,18 @@ def calculate_angles(point_3D):
     alpha = np.rad2deg(alpha)
  
 
-    return [alpha, distance_plane]
+    return [alpha, distance_plane/5, x/5, y/5]
+start_stream()
+calculate_homogeneous_matrix()
 
+change_exposure(-8)
+while True: 
+    get_frame()
+    key = cv2.waitKey(1)
+    if key == ord("c"):
+        print(get_coordinates())
+    elif key == 27:
+        break
+        
+close_stream()
+            
