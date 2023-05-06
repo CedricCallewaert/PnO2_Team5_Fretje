@@ -125,7 +125,7 @@ def calculate_triplets():
     coordinates= [(x1, y1), (x2, y2), (x3, y3), (x4, y4), (x5, y5), (x6, y6), (x7, y7), (x8, y8), (x9, y9)]
     coordinates= coordinates[:len(contours)]
     close_triplets = []
-    threshold = 1.0
+    threshold = 80
 
     # Loop over every possible combination of three points
     for i in range(len(coordinates)):
