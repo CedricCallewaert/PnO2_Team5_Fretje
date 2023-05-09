@@ -3,7 +3,6 @@
 	<Property Name="NI.LV.All.SourceOnly" Type="Bool">false</Property>
 	<Property Name="NI.Project.Description" Type="Str"></Property>
 	<Property Name="varPersistentID:{091C12A3-B39C-4A06-AB90-E3F76FE8438B}" Type="Ref">/My Computer/Shared variables.lvlib/ServoY</Property>
-	<Property Name="varPersistentID:{510E270F-E780-47D2-907C-DBEFB48EAA67}" Type="Ref">/My Computer/Shared variables.lvlib/Solenoid</Property>
 	<Property Name="varPersistentID:{7214BB3F-6905-471E-A969-4C1625906B40}" Type="Ref">/My Computer/Shared variables.lvlib/Pomp</Property>
 	<Property Name="varPersistentID:{9D0D9291-9E5C-43F7-8626-9340A3A16F94}" Type="Ref">/My Computer/Shared variables.lvlib/ServoX</Property>
 	<Property Name="varPersistentID:{A7ADA9D3-8FB0-47C1-9D80-E9C92BD42C4F}" Type="Ref">/My Computer/Shared variables.lvlib/Noodstop</Property>
@@ -41,6 +40,7 @@
 		<Item Name="Global_Variables.vi" Type="VI" URL="../Global_Variables.vi"/>
 		<Item Name="Main_pc.vi" Type="VI" URL="../Main_pc.vi"/>
 		<Item Name="Shared variables.lvlib" Type="Library" URL="../Shared variables.lvlib"/>
+		<Item Name="Slow_movement.vi" Type="VI" URL="../Slow_movement.vi"/>
 		<Item Name="Dependencies" Type="Dependencies">
 			<Item Name="PythonVersionsEnum.ctl" Type="VI" URL="/../Program Files (x86)/National Instruments/LabVIEW 2021/examples/Connectivity/Python/support/PythonVersionsEnum.ctl"/>
 			<Item Name="PythonVersionsEnum.ctl" Type="VI" URL="../../../../../../../../../Program Files (x86)/National Instruments/LabVIEW 2021/examples/Connectivity/Python/support/PythonVersionsEnum.ctl"/>
