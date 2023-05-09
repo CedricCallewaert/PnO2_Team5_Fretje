@@ -11,7 +11,7 @@ exposure = 0
 previousExposure = None
 
 
-def get_coordinates():
+def get_coordinates(input):
     # load the homography matrix
     with np.load("homography.npz") as X:
         H = X["homography_matrix"]
@@ -20,9 +20,9 @@ def get_coordinates():
     coordinates= calculate_triplets()
 
     # calculate 3D coordinates
-    output = []
+    output_true = []
+    output_false = []
     for tuple in coordinates:
-        ls = []
         x=tuple[0]
         y=tuple[1]
 
@@ -31,12 +31,13 @@ def get_coordinates():
         point_3D /= point_3D[2]
 
         angle_distance, new_2D = calculate_angles(point_3D)
+        output_true.append(angle_distance)
+        output_false.append(new_2D)
 
-        ls.append(angle_distance, [x,y], new_2D)
-        output.append(ls)
-    
-
-    return output
+    if input == True:
+        return output_true
+    else:
+        return output_false
 
 def draw_circle(contour, frame, number):
     
@@ -236,6 +237,19 @@ def calculate_angles(point_3D):
     return [alpha, distance_plane], [x,y]
 
 
+start_stream()
+change_exposure(-4)
+calculate_homogeneous_matrix()
 
+while True:
+    get_frame()
+    key = cv2.waitKey(1)
+    if key == 27:
+        break
+    if key == ord("w"):
+        warp()
+    if key == ord("c"):
+        print(get_coordinates())
 
+close_stream()
             
