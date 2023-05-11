@@ -100,7 +100,7 @@ def get_frame():
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
     # define range of red color in HSV
-    lower_red_1 = np.array([0,0,220]) 
+    lower_red_1 = np.array([0,0,240]) 
     upper_red_1 = np.array([179,50,255])
     mask = cv2.inRange(hsv, lower_red_1, upper_red_1)
 
@@ -127,6 +127,8 @@ def get_frame():
     if len(contours) > 8:
         x9, y9 = draw_circle(sorted_contours[8], frame, 8)
 
+    # show video
+    cv2.imshow("Frame", frame)
     #show the image for x mseconds before it automatically closes
     cv2.waitKey(1) 
 
@@ -241,7 +243,7 @@ def calculate_angles(point_3D):
 """
 start_stream()
 change_exposure(-4)
-calculate_homogeneous_matrix()
+#calculate_homogeneous_matrix()
 
 while True:
     get_frame()
@@ -251,7 +253,7 @@ while True:
     if key == ord("w"):
         warp()
     if key == ord("c"):
-        print(get_coordinates())
+        print(get_coordinates(True))
+        print(get_coordinates(False))
 
 close_stream()
-"""

@@ -1,6 +1,10 @@
 from sklearn.cluster import KMeans
 import numpy as np
 
+
+
+
+
 coordinates = [
     (1, 2), (2, 3), (1, 3),
     (10, 11), (11, 12), (10, 12),
