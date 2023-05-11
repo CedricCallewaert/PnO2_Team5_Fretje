@@ -10,6 +10,8 @@ cameraNr = 0
 exposure = 0
 previousExposure = None
 
+def test(number):
+    return number + 1
 
 def get_coordinates(input):
     # load the homography matrix
@@ -236,7 +238,7 @@ def calculate_angles(point_3D):
  
     return [alpha, distance_plane], [x,y]
 
-
+"""
 start_stream()
 change_exposure(-4)
 calculate_homogeneous_matrix()
@@ -252,4 +254,4 @@ while True:
         print(get_coordinates())
 
 close_stream()
-            
+"""
