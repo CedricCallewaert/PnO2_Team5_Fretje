@@ -170,10 +170,10 @@ def close_stream():
     cv2.destroyAllWindows()
 
 def calculate_homogeneous_matrix():
-    points_real = np.array([[2320/7,0,0],
-                            [2320/7,720,0],
-                            [6640/7,720,0],
-                            [6640/7,0,0]])
+    points_real = np.array([[280,0,0],
+                            [280,720,0],
+                            [1000,720,0],
+                            [1000,0,0]])
         
     points_camera = np.zeros((4, 2)) 
 
@@ -257,3 +257,4 @@ while True:
         print(get_coordinates(False))
 
 close_stream()
+"""
