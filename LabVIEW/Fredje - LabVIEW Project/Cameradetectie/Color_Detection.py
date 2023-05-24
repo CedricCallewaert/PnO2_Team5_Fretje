@@ -100,7 +100,7 @@ def get_frame():
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
     # define range of red color in HSV
-    lower_red_1 = np.array([0,0,240]) 
+    lower_red_1 = np.array([0,0,254]) 
     upper_red_1 = np.array([179,50,255])
     mask = cv2.inRange(hsv, lower_red_1, upper_red_1)
 
@@ -170,10 +170,10 @@ def close_stream():
     cv2.destroyAllWindows()
 
 def calculate_homogeneous_matrix():
-    points_real = np.array([[280,0,0],
-                            [280,720,0],
-                            [1000,720,0],
-                            [1000,0,0]])
+    points_real = np.array([[352,0,0],
+                            [352,720,0],
+                            [928,720,0],
+                            [928,0,0]])
         
     points_camera = np.zeros((4, 2)) 
 
@@ -225,26 +225,27 @@ def click_test():
 
 def calculate_angles(point_3D):
     # transform from pixels to meters
-    x=(point_3D[0]*7)/720-56/9
-    y=7-(point_3D[1]*7)/720+3
+    x= ((point_3D[0]-640)*5)/720
+    y= 5-(point_3D[1]*5)/720+3
 
     # calculate angles
     alpha = np.arctan2(x, y)
  
     # calculate distance
     distance_plane = np.sqrt(x**2 + y**2)
-    distance_direct = np.sqrt(distance_plane**2 + (2.9)**2)
+    
 
     # convert to degrees
     alpha = np.rad2deg(alpha)
  
     return [alpha, distance_plane], [x,y]
 
-"""
-start_stream()
-change_exposure(-4)
-#calculate_homogeneous_matrix()
 
+start_stream()
+#change_exposure(-4)
+#calculate_homogeneous_matrix()
+#warp()
+"""
 while True:
     get_frame()
     key = cv2.waitKey(1)
@@ -255,6 +256,12 @@ while True:
     if key == ord("c"):
         print(get_coordinates(True))
         print(get_coordinates(False))
-
-close_stream()
 """
+with np.load("homography.npz") as X:
+    H = X["homography_matrix"]
+point_3D = np.dot(H, np.array([200, 50, 1]))
+point_3D /= point_3D[2]
+angle_distance, new_2D = calculate_angles(point_3D)
+print(angle_distance, new_2D)
+
+#close_stream()
